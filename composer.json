@@ -1,0 +1,13 @@
+{
+    "name": "vendor/name",
+    "require": {
+        "firebase/php-jwt": "^5.0",
+        "retrinko/ini": "^2.0"
+    },
+    "authors": [
+        {
+            "name": "lanes lanes",
+            "email": "lanes@gmail.com"
+        }
+    ]
+}

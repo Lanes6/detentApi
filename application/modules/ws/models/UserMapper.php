@@ -6,16 +6,6 @@ class UserMapper extends Model{
         $this->setTable('data.user');
     }
 
-    /*public function fetchAll(){
-        $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable());
-        $req->execute();
-        $data= array();
-        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            array_push ($data,(new User($row)));
-        }
-        return $data;
-    }*/
-
     public function findByIdUser($id_user){
         $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE id_user='.$id_user);
         $req->execute();
@@ -25,7 +15,7 @@ class UserMapper extends Model{
         return null;
     }
 
-   /* public function findByLogin($login){
+    public function findByLogin($login){
         $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE login=\''.$login.'\'');
         $req->execute();
         while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
@@ -34,27 +24,30 @@ class UserMapper extends Model{
         return null;
     }
 
-    public function resetSecret($user){
-        $configApp = Retrinko\Ini\IniFile::load(PATH_CONFIG."application.ini");
-        $newSecret=$user->getSecret();
-        while ($newSecret==$user->getSecret()){
-            $newSecret=$this->_generateRandomSecret();
-        }
-        $newSecretHash= password_hash($newSecret, $configApp->get('password', 'algoInInt'));
-        $req=$this->getBdd()->prepare('UPDATE '.$this->getTable().' SET secret = \''.$newSecretHash.'\' WHERE id_user='.$user->getId_user());
+    public function findByMail($mail){
+        $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE mail=\''.$mail.'\'');
         $req->execute();
-        return $newSecret;
+        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+            return new User($row);
+        }
+        return null;
     }
 
+    public function createUser(User $user){
+        $req=$this->getBdd()->prepare('INSERT INTO '.$this->getTable().'(login, hash_mdp, secret_token, mail) VALUES (\''.$user->getLogin().'\', \''.$user->getHash_mdp().'\', \''.$user->getSecret_token().'\', \''.$user->getMail().'\')');
+        $req->execute();
+        return true;
+    }
 
-    private function _generateRandomSecret($longueur = 10)
-    {
-        $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $longueurMax = strlen($caracteres);
-        $chaineAleatoire = '';
-        for ($i = 0; $i < $longueur; $i ++) {
-            $chaineAleatoire .= $caracteres[rand(0, $longueurMax - 1)];
-        }
-        return $chaineAleatoire;
-    }*/
+    public function updateUser(User $user){
+        $req=$this->getBdd()->prepare(' UPDATE '.$this->getTable().' SET login=\''.$user->getLogin().'\', hash_mdp=\''.$user->getHash_mdp().'\', secret_token=\''.$user->getSecret_token().'\', mail=\''.$user->getMail().'\' WHERE id_user=\''.$user->getId_User().'\'');
+        $req->execute();
+        return true;
+    }
+
+    public function deleteUser($id_user){
+        $req=$this->getBdd()->prepare('DELETE FROM '.$this->getTable().' WHERE id_user='.$id_user);
+        $req->execute();
+        return true;
+    }
 }

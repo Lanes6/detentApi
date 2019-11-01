@@ -13,11 +13,11 @@ class Router
 
         try {
             //CHARGEMENT AUTO DES CLASS
+            require_once('application/plugins/session/MapAcess.php');
+            require_once('application/plugins/session/JwtToken.php');
             spl_autoload_register(function ($class) {
                 require_once('application/modules/ws/models/' . $class . '.php');
             });
-            require_once('application/plugins/session/MapAcess.php');
-            require_once('application/plugins/session/JwtToken.php');
             $url = '';
             if (isset($_GET['url'])) {
                 $url = explode('/', filter_var($_GET['url']), FILTER_SANITIZE_URL);
@@ -34,19 +34,19 @@ class Router
                                 $this->_ctrl->$action();
                             }else{
                                 http_response_code(403);
-                                throw new Exception('Accès refusé');
+                                throw new Exception('Acces refuse');
                             }
                         }else{
                             http_response_code(404);
-                            throw new Exception('Url invalide');
+                            throw new Exception('Url invalide 1');
                         }
                     }else{
                         http_response_code(404);
-                        throw new Exception('Url invalide');
+                        throw new Exception('Url invalide 2');
                     }
                 }else{
                     http_response_code(404);
-                    throw new Exception('Url invalide');
+                    throw new Exception('Url invalide 3');
                 }
             } else {
                 http_response_code(404);
@@ -61,21 +61,26 @@ class Router
     private function _checkAcces($module, $controller, $action)
     {
         $mapAcess = new MapAcess();
-        if ($mapAcess->getAcces($module, $controller, $action) != 0) {
-            $headers=apache_request_headers();
-            if(isset($headers["Authorization"])) {
-                $authorizationHeader = explode(" ", $headers["Authorization"]);
-                if (isset($authorizationHeader[1])) {
-                    $jwtToken = new JwtToken();
-                    $payload = $jwtToken->verifyToken($authorizationHeader[1]);
-                    if ($payload != null){
-                        return true;
-                   }
+        if($mapAcess->exist($module, $controller, $action)){
+            if ($mapAcess->getAcces($module, $controller, $action) != 0) {
+                $headers=apache_request_headers();
+                if(isset($headers["Authorization"])) {
+                    $authorizationHeader = explode(" ", $headers["Authorization"]);
+                    if (isset($authorizationHeader[1])) {
+                        $jwtToken = new JwtToken();
+                        $payload = $jwtToken->verifyToken($authorizationHeader[1]);
+                        if ($payload != null){
+                            return true;
+                        }
+                        return false;
+                    }
                 }
+                return false;
+            } else {
+                return true;
             }
+        }else{
             return false;
-        } else {
-            return true;
         }
     }
 }

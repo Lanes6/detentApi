@@ -11,6 +11,7 @@ class IndexController{
         http_response_code(500);
     }
 
+
     public function indexAction(){
     	$this->_return["msg"]="Hello";
     	http_response_code(200);

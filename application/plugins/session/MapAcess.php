@@ -30,7 +30,7 @@ class MapAcess
             "updateAction"=>1,
             "deleteAction"=>1,
             "selectByLoginAction"=>1,
-            "selectByMailAction"=>1
+            "selectByIdUserAction"=>1
         );
     }
 

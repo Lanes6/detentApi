@@ -23,7 +23,7 @@ class UserController
                 $user= new User($login,$mail,$password);
                 $res = $this->_userMapper->createUser($user);
                 if($res){
-                    $this->_return["msg"]=$user->getLogin();
+                    $this->_return["msg"]=$user->getId_User();
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l utilisateur";
@@ -41,16 +41,16 @@ class UserController
     }
 
     public function deleteAction(){
-        if(isset($_POST["login"])){
-            $login=$_POST["login"];
-            $user=$this->_userMapper->findByLogin($login);
+        if(isset($_POST["id_user"])){
+            $id_user=$_POST["is_user"];
+            $user=$this->_userMapper->findByIdUser($id_user);
             if($user != NULL){
                 $this->_userMapper->deleteUser($user->getId_User());
-                $this->_return["msg"]=$user->getLogin()." supprime";
+                $this->_return["msg"]=$user->getId_User()." supprime";
                 http_response_code(200);
             }else{
-                $this->_return["msg"]="Aucun utilisateur ne possede ce login";
-                http_response_code(200);
+                $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
+                http_response_code(404);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
@@ -67,8 +67,7 @@ class UserController
                 $this->_select($user);
             }else{
                 $this->_return["msg"]="Aucun utilisateur ne possede ce login";
-                $this->_return["user"]=null;
-                http_response_code(200);
+                http_response_code(404);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
@@ -77,16 +76,15 @@ class UserController
         echo(json_encode($this->_return));
     }
 
-    public function selectByMailAction(){
-        if(isset($_POST["mail"])){
-            $mail=$_POST["mail"];
-            $user=$this->_userMapper->findByMail($mail);
+    public function selectByIdUserAction(){
+        if(isset($_POST["id_user"])){
+            $id_user=$_POST["id_user"];
+            $user=$this->_userMapper->findByIdUser($id_user);
             if($user != NULL){
                 $this->_select($user);
             }else{
-                $this->_return["msg"]="Aucun utilisateur ne possede ce mail";
-                $this->_return["user"]=null;
-                http_response_code(200);
+                $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
+                http_response_code(404);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
@@ -96,17 +94,18 @@ class UserController
     }
 
     public function updateAction(){
-        if(isset($_POST["oldLogin"]) && isset($_POST["newLogin"]) && isset($_POST["oldPassword"]) && isset($_POST["newPassword"]) && isset($_POST["newMail"])){
-            $user=$this->_userMapper->findByLogin($_POST["oldLogin"]);
+        if(isset($_POST["id_user"]) && isset($_POST["newLogin"]) && isset($_POST["oldPassword"]) && isset($_POST["newPassword"]) && isset($_POST["newMail"])){
+            $user=$this->_userMapper->findByIdUser($_POST["id_user"]);
             if($user != NULL && $user->checkPassword($_POST["oldPassword"])){
                 $newUser= new User($_POST["newLogin"],$_POST["newMail"],$_POST["newPassword"]);
                 $newUser->setId_User($user->getId_User());
 
                 $this->_userMapper->updateUser($newUser);
-                $this->_return["msg"]=$newUser->getLogin();
+                $this->_return["msg"]=$newUser->getId_User();
+                http_response_code(200);
             }else{
                 $this->_return["msg"]="Identifiants invalides";
-                http_response_code(200);
+                http_response_code(403);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
@@ -118,6 +117,7 @@ class UserController
     private function _select(User $user){
         $this->_return["msg"]="Utilisateur trouve";
         $this->_return["user"]=array(
+            "id_user"=>$user->getId_User(),
             "login"=>$user->getLogin(),
             "mail"=>$user->getMail()
         );

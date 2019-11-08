@@ -3,3 +3,7 @@ composer.lock
 application/configs/database.ini
 application/configs/application.ini
 .idea/
+
+database.ini
+application.ini
+index.html

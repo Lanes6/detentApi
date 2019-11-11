@@ -6,6 +6,7 @@ class UserMapper extends Model{
         $this->setTable('data.user');
     }
 
+    //Avons besoin d'une boucle while ici?
     public function findByIdUser($id_user){
         $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE id_user='.$id_user);
         $req->execute();
@@ -15,6 +16,7 @@ class UserMapper extends Model{
         return null;
     }
 
+    //Avons besoin d'une boucle while ici?
     public function findByLogin($login){
         $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE login=\''.$login.'\'');
         $req->execute();
@@ -24,6 +26,7 @@ class UserMapper extends Model{
         return null;
     }
 
+    //Avons besoin d'une boucle while ici?
     public function findByMail($mail){
         $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE mail=\''.$mail.'\'');
         $req->execute();

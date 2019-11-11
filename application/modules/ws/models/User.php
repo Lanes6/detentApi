@@ -62,20 +62,6 @@ class User implements \JsonSerializable {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * @return mixed
      */

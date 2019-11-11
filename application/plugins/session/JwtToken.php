@@ -1,5 +1,5 @@
 <?php
-
+//Classe de gestion du token
 class JwtToken
 {
     private $_configApp;

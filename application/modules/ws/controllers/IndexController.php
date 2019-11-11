@@ -19,7 +19,7 @@ class IndexController{
     }
 
     public function testDBAction(){
-    	$this->_return["msg"]="TestDB";
+        $this->_return["msg"]="TestDB";
 		$user = $this->_userMapper->findByIdUser(1);
 
 		if($user!=null){

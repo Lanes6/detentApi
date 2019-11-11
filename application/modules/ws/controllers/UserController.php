@@ -41,19 +41,19 @@ class UserController
     }
 
     public function deleteAction(){
-        if(isset($_POST["login"])){
-            $login=$_POST["login"];
-            $user=$this->_userMapper->findByLogin($login);
+        if(isset($_POST["id_user"])){
+            $id_user=$_POST["id_user"];
+            $user=$this->_userMapper->findByIdUser($id_user);
             if($user != NULL){
-                $this->_userMapper->deleteUser($user->getId_User());
-                $this->_return["msg"]=$user->getLogin()." supprime";
+                $this->_userMapper->deleteUser($id_user);
+                $this->_return["msg"]=$user->getLogin()." à été bien  supprime";
                 http_response_code(200);
             }else{
                 $this->_return["msg"]="Aucun utilisateur ne possede ce login";
-                http_response_code(200);
+                http_response_code(404);
             }
         }else{
-            $this->_return["msg"]="1 ou plusieurs parametres absents";
+            $this->_return["msg"]="Parametre id_user absent";
             http_response_code(400);
         }
         echo(json_encode($this->_return));
@@ -68,7 +68,25 @@ class UserController
             }else{
                 $this->_return["msg"]="Aucun utilisateur ne possede ce login";
                 $this->_return["user"]=null;
-                http_response_code(200);
+                http_response_code(404);
+            }
+        }else{
+            $this->_return["msg"]="Parametres login absent";
+            http_response_code(400);
+        }
+        echo(json_encode($this->_return));
+    }
+
+
+    public function selectByIdUserAction(){
+        if(isset($_POST["id_user"])){
+            $id_user=$_POST["id_user"];
+            $user=$this->_userMapper->findByIdUser($id_user);
+            if($user != NULL){
+                $this->_select($user);
+            }else{
+                $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
+                http_response_code(404);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
@@ -77,6 +95,7 @@ class UserController
         echo(json_encode($this->_return));
     }
 
+    
     public function selectByMailAction(){
         if(isset($_POST["mail"])){
             $mail=$_POST["mail"];
@@ -94,6 +113,8 @@ class UserController
         }
         echo(json_encode($this->_return));
     }
+
+
 
     public function updateAction(){
         if(isset($_POST["oldLogin"]) && isset($_POST["newLogin"]) && isset($_POST["oldPassword"]) && isset($_POST["newPassword"]) && isset($_POST["newMail"])){
@@ -116,7 +137,7 @@ class UserController
     }
 
     private function _select(User $user){
-        $this->_return["msg"]="Utilisateur trouve";
+        $this->_return["msg"]="Utilisateur trouvé";
         $this->_return["user"]=array(
             "login"=>$user->getLogin(),
             "mail"=>$user->getMail()

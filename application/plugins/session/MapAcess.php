@@ -30,7 +30,14 @@ class MapAcess
             "updateAction"=>1,
             "deleteAction"=>1,
             "selectByLoginAction"=>1,
+            "selectByUserAction"=>1,
             "selectByMailAction"=>1
+        );
+        $this->_mapAcess["ws"]["ObjetController"] = array(
+            "createAction"=>1,
+            "updateAction"=>1,
+            "deleteAction"=>1,
+            "selectByIdAction"=>1
         );
     }
 

@@ -25,6 +25,7 @@ class Router
                     //detentApi/controller/action
                     $controller = ucfirst($url[1]) . "Controller";
                     $action = $url[2] . "Action";
+                    //
                     $controllerFile = 'application/modules/'.$module.'/controllers/' . $controller . '.php';
                     if (file_exists($controllerFile)) {
                         require_once($controllerFile);

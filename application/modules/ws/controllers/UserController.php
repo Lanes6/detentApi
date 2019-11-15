@@ -23,7 +23,7 @@ class UserController
                 $user= new User($login,$mail,$password);
                 $res = $this->_userMapper->createUser($user);
                 if($res){
-                    $this->_return["msg"]=$user->getId_User();
+                    $this->_return["msg"]=$this->_userMapper->findByLogin($login)->getId_User();
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l utilisateur";

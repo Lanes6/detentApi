@@ -18,6 +18,7 @@ class MapAcess
             "indexAction"=>0,
             "testComposerAction"=>0,
             "testJWTAction"=>1,
+            "giveMeMyIdAction"=>1,
             "testDBAction"=>0
         );         
         $this->_mapAcess["ws"]["LoginController"] = array(

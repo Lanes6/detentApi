@@ -63,17 +63,10 @@ class Router
         $mapAcess = new MapAcess();
         if($mapAcess->exist($module, $controller, $action)){
             if ($mapAcess->getAcces($module, $controller, $action) != 0) {
-                $headers=apache_request_headers();
-                if(isset($headers["Authorization"])) {
-                    $authorizationHeader = explode(" ", $headers["Authorization"]);
-                    if (isset($authorizationHeader[1])) {
-                        $jwtToken = new JwtToken();
-                        $payload = $jwtToken->verifyToken($authorizationHeader[1]);
-                        if ($payload != null){
-                            return true;
-                        }
-                        return false;
-                    }
+                $jwtToken = new JwtToken();
+                $payload = $jwtToken->giveMePayload();
+                if ($payload != null){
+                    return true;
                 }
                 return false;
             } else {

@@ -23,7 +23,7 @@ class UserController
                 $user= new User($login,$mail,$password);
                 $res = $this->_userMapper->createUser($user);
                 if($res){
-                    $this->_return["msg"]=$this->_userMapper->findByLogin($login)->getId_User();
+                    $this->_return["id_user"]=$this->_userMapper->findByLogin($login)->getId_User();
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l utilisateur";
@@ -41,67 +41,46 @@ class UserController
     }
 
     public function deleteAction(){
-        if(isset($_POST["id_user"])){
-            $id_user=$_POST["is_user"];
-            $user=$this->_userMapper->findByIdUser($id_user);
-            if($user != NULL){
-                $this->_userMapper->deleteUser($user->getId_User());
-                $this->_return["msg"]=$user->getId_User()." supprime";
-                http_response_code(200);
-            }else{
-                $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
-                http_response_code(404);
-            }
+        $jwt = new JwtToken();
+        $id_user=$jwt->giveMePayload()->id_user;
+        $user=$this->_userMapper->findByIdUser($id_user);
+        if($user != NULL){
+            $this->_userMapper->deleteUser($user->getId_User());
+            $this->_return["id_user"]=$user->getId_User();
+            http_response_code(200);
         }else{
-            $this->_return["msg"]="1 ou plusieurs parametres absents";
-            http_response_code(400);
-        }
-        echo(json_encode($this->_return));
-    }
-
-    public function selectByLoginAction(){
-        if(isset($_POST["login"])){
-            $login=$_POST["login"];
-            $user=$this->_userMapper->findByLogin($login);
-            if($user != NULL){
-                $this->_select($user);
-            }else{
-                $this->_return["msg"]="Aucun utilisateur ne possede ce login";
-                http_response_code(404);
-            }
-        }else{
-            $this->_return["msg"]="1 ou plusieurs parametres absents";
-            http_response_code(400);
+            $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
+            http_response_code(404);
         }
         echo(json_encode($this->_return));
     }
 
     public function selectByIdUserAction(){
-        if(isset($_POST["id_user"])){
-            $id_user=$_POST["id_user"];
-            $user=$this->_userMapper->findByIdUser($id_user);
-            if($user != NULL){
-                $this->_select($user);
-            }else{
-                $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
-                http_response_code(404);
-            }
+        $id_user=$_POST["id_user"];
+        $user=$this->_userMapper->findByIdUser($id_user);
+        if($user != NULL){
+            $this->_return["id_user"]=$user->getId_User();
+            $this->_return["login"]=$user->getLogin();
+            $this->_return["mail"]=$user->getMail();
+            http_response_code(200);
         }else{
-            $this->_return["msg"]="1 ou plusieurs parametres absents";
-            http_response_code(400);
+            $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
+            http_response_code(404);
         }
         echo(json_encode($this->_return));
     }
 
     public function updateAction(){
-        if(isset($_POST["id_user"]) && isset($_POST["newLogin"]) && isset($_POST["oldPassword"]) && isset($_POST["newPassword"]) && isset($_POST["newMail"])){
-            $user=$this->_userMapper->findByIdUser($_POST["id_user"]);
+        if(isset($_POST["newLogin"]) && isset($_POST["oldPassword"]) && isset($_POST["newPassword"]) && isset($_POST["newMail"])){
+            $jwt = new JwtToken();
+            $id_user=$jwt->giveMePayload()->id_user;
+            $user=$this->_userMapper->findByIdUser($id_user);
             if($user != NULL && $user->checkPassword($_POST["oldPassword"])){
                 $newUser= new User($_POST["newLogin"],$_POST["newMail"],$_POST["newPassword"]);
                 $newUser->setId_User($user->getId_User());
 
                 $this->_userMapper->updateUser($newUser);
-                $this->_return["msg"]=$newUser->getId_User();
+                $this->_return["id_user"]=$newUser->getId_User();
                 http_response_code(200);
             }else{
                 $this->_return["msg"]="Identifiants invalides";
@@ -112,15 +91,5 @@ class UserController
             http_response_code(400);
         }
         echo(json_encode($this->_return));
-    }
-
-    private function _select(User $user){
-        $this->_return["msg"]="Utilisateur trouve";
-        $this->_return["user"]=array(
-            "id_user"=>$user->getId_User(),
-            "login"=>$user->getLogin(),
-            "mail"=>$user->getMail()
-        );
-        http_response_code(200);
     }
 }

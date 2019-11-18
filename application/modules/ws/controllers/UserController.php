@@ -56,7 +56,8 @@ class UserController
     }
 
     public function selectByIdUserAction(){
-        $id_user=$_POST["id_user"];
+        $jwt = new JwtToken();
+        $id_user=$jwt->giveMePayload()->id_user;
         $user=$this->_userMapper->findByIdUser($id_user);
         if($user != NULL){
             $this->_return["id_user"]=$user->getId_User();

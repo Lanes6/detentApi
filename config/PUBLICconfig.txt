@@ -1,0 +1,5 @@
+{ipDB}
+{usernameDB}
+{passwordDB}
+{nameDB}
+{passwordUser}

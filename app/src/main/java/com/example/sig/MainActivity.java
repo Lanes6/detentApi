@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements
             = MediaType.get("application/json; charset=utf-8");
 
 
-    private String url = "92.160.25.170";
+    private String url = "90.20.56.80";
     private String HOST_MAP = "http://"+url+":8080";
     private String HOST_API = "http://"+url;
     private String URL_TEST_API = "/detentApi/index/index";
@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, "pk.eyJ1IjoiYmxhY3BpZWNlIiwiYSI6ImNrMmo4aHc3bjEydmczY3BjcHBscTlmdXAifQ.IHBqHwBHXhaWvwv1fDkbjQ");
         setContentView(R.layout.activity_main);
@@ -246,6 +246,9 @@ public class MainActivity extends AppCompatActivity implements
         clientAPI = new OkHttpClient();
         user = new User();
         selectedObject = new Object();
+        selectedNote = new Note();
+        selectedPicture = new Picture();
+        selectedReport = new Report();
 
         erreurUpdate = new AlertDialog.Builder(this)
                 .setView(R.layout.erreur_update)
@@ -267,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements
 
         listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_view&outputFormat=application%2Fjson");
         listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_suggestion_view&outputFormat=application%2Fjson");
-        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3toilet_reported_view&outputFormat=application%2Fjson");
+        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_reported_view&outputFormat=application%2Fjson");
 
         listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atrash_view&outputFormat=application%2Fjson");
         listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atrash_suggestion_view&outputFormat=application%2Fjson");
@@ -741,24 +744,48 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (feature.properties() != null) {
                     for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
+                        Log.i("info point",entry.getKey()+" : "+entry.getValue());
                         if(entry.getKey().contains("id_object")){
                             selectedObject.setId_object(entry.getValue().getAsInt());
                         }
                         if(entry.getKey().contains("type")){
                             selectedObject.setType(entry.getValue().getAsString());
                             if(selectedObject.getType().contains("suggestion") || selectedObject.getType().contains("proposition")){
-                                if(connect_to_server){
-                                    selectNote(""+selectedObject.getId_object());
+                                if(connect_to_server && connect_to_account){
+                                    if(selectNote(""+selectedObject.getId_object())){
+                                        Log.i("recup info","select note recup");
+                                    }
+                                    else{
+                                        selectedNote.setNote(0.0);
+                                        Log.i("recup info","select note pas recup");
+                                    }
+                                }
+                                else{
+                                    selectedNote.setNote(0.0);
                                 }
                             }
                             if(selectedObject.getType().contains("report")){
-                                if(connect_to_server){
-                                    selectReportByObject(""+selectedObject.getId_object());
+                                if(connect_to_server && connect_to_account){
+                                    if(selectReportByObject(""+selectedObject.getId_object())){
+                                        Log.i("recup info","select report recup");
+                                    }
+                                    else{
+                                        selectedReport.setDescription("Aucune description");
+                                        Log.i("recup info","select report pas recup");
+                                    }
+                                }
+                                else{
+                                    selectedReport.setDescription("Aucune description");
                                 }
                             }
                         }
                         if(entry.getKey().contains("description")){
-                            selectedObject.setDescription(entry.getValue().getAsString());
+                            try{
+                                selectedObject.setDescription(entry.getValue().getAsString());
+                            }catch (Exception e){
+                                selectedObject.setDescription("Aucune description");
+                            }
+
                         }
                     }
                 }
@@ -769,7 +796,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-                if(!connect_to_server || !connected_to_internet){
+                if(!connect_to_server || !connected_to_internet || !connect_to_account){
                     //pas de conneixon au serveur ou pas de connexion à internet
                     view = getLayoutInflater().inflate(R.layout.affichage_point_horsligne,null);
                     typePoint = (TextView) view.findViewById(R.id.textView_type_point);
@@ -835,7 +862,7 @@ public class MainActivity extends AppCompatActivity implements
                             }
                             else{
                                 //tous autre
-                                view = getLayoutInflater().inflate(R.layout.affichage_point_horsligne,null);
+                                view = getLayoutInflater().inflate(R.layout.affichage_point_base,null);
                                 typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                                 descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
                                 Button bouton_report = (Button) view.findViewById(R.id.button_report_point);
@@ -1092,7 +1119,7 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         url = newUrl.getText().toString();
-                        Toast.makeText(context,"URL change",Toast.LENGTH_LONG).show();
+                        Toast.makeText(context,"URL change"+url,Toast.LENGTH_LONG).show();
                     }
                 });
         modif.create().show();
@@ -2025,6 +2052,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         resultat_selectNote = false;
+        selectedNote = new Note();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("id_object",id_object)

@@ -6,4 +6,5 @@ application/configs/application.ini
 
 database.ini
 application.ini
-index.html
+*.html
+

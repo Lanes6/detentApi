@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_couches"
+        android:orderInCategory="0"
+        android:title="Couches"
+        app:showAsAction="never"
+        android:icon="@drawable/baseline_filter_list_white_18dp"/>
+    <item
+        android:id="@+id/action_affichage"
+        android:orderInCategory="1"
+        android:title="Options d'affichage"
+        app:showAsAction="never"
+        android:icon="@drawable/baseline_build_white_18dp"/>
+    <item
+        android:id="@+id/action_rafraichir"
+        android:orderInCategory="3"
+        android:title="Actualiser la map"
+        app:showAsAction="always"
+        android:icon="@drawable/baseline_refresh_white_18dp"/>
+    <item
+    android:id="@+id/action_status"
+    android:orderInCategory="2"
+    android:title="status de votre connexion"
+    app:showAsAction="always"
+    android:icon="@drawable/baseline_sync_white_18dp"/>
+    <item
+        android:id="@+id/action_connexion"
+        android:orderInCategory="4"
+        android:title="connextez-vous"
+        app:showAsAction="always"
+        android:icon="@drawable/baseline_lock_white_18dp"/>
+
+</menu>

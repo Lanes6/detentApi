@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+
+    <Switch
+        android:id="@+id/clustering_point"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tous les points"
+        android:textSize="18dp" />
+
+    <Switch
+        android:id="@+id/clustering_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tous les noms de lieu"
+        android:textSize="18dp"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="30dp" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Changer la source des données"
+        android:textColor="@color/colorAccent"
+        android:textSize="18dp" />
+
+    <Switch
+        android:id="@+id/donneesLocal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="en ligne"
+        android:textSize="18dp"/>
+
+
+</LinearLayout>

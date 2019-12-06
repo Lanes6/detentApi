@@ -4,39 +4,39 @@ class ObjectController
 {
     private $_objectMapper;
     private $_return;
+    private $jwt;
 
     public function __construct()
     {
         $this->_objectMapper=new ObjectMapper();
         http_response_code(500);
         $this->_return=[];
+        $this->jwt = new JwtToken();
     }
 
     public function ctlToken(){
-        $headers=apache_request_headers();
-        if(isset($headers["Authorization"])) {
-            $authorizationHeader = explode(" ", $headers["Authorization"]);
-            if (isset($authorizationHeader[1])) {
-                $jwtToken = new JwtToken();
-                $payload = $jwtToken->verifyToken($authorizationHeader[1]);
-                return $payload;
-            }
-             return null;
-        }
-            return null;
+        //$this->jwt = new JwtToken();
+        return ($jwt->giveMePayload() != NULL);
     }
+    
     
 
     public function createAction(){
-
-        $id_user=$_POST["id_user"];
         $type=$_POST["type"];
         $description=$_POST["description"];
-        $geom=$_POST["geom"];
+        $latitude=$_POST["latitude"];
+        $longitude=$_POST["longitude"];
 
-        if(isset($id_user) && isset($type) && isset($description) && isset($geom) && $this->ctlToken() !=NULL){
-            $testGeom=$this->ObjectMapper->testCoordGeom($geom);
-            if($testGeom){
+        if(isset($id_user) && isset($type) && isset($description) && isset($latitude)&& isset($latitude)){
+            if(ctlToken()){
+                $id_user=$jwt->giveMePayload()->id_user;
+            }else{
+                $this->_return["msg"]="Vous n'êtes pas connecté !";
+                http_response_code(400);
+            }
+            $geom = $this->$this->_objectMapper->coordToGeomWhithTest($latitude,$longitude);
+            //$testoord=$this->ObjectMapper->testCoordGeom($geom);
+            if($geom != NULL){
                 $objet= new Objet($id_user,$type,$description, $geom);
                 $res = $this->_objetMapper->createObjet($objet);
                 if($res){
@@ -60,7 +60,13 @@ class ObjectController
 
     public function deleteAction(){
 
-        if(isset($_POST["id_objet"]) && $this->ctlToken() !=NULL){
+        if(isset($_POST["id_objet"])){
+            if(ctlToken()){
+                $id_user=$jwt->giveMePayload()->id_user;
+            }else{
+                $this->_return["msg"]="Vous n'êtes pas connecté !";
+                http_response_code(400);
+            }
             $id_objet=$_POST["id_objet"];
             $objet=$this->_objetMapper->findByIdgin($id_objet);
             if($objet != NULL){
@@ -84,7 +90,13 @@ class ObjectController
     }
 
     public function selectByIdAction(){
-            if(isset($_POST["id_objet"]) && $this->ctlToken() !=NULL){
+            if(isset($_POST["id_objet"])){
+                if(ctlToken()){
+                    $id_user=$jwt->giveMePayload()->id_user;
+                }else{
+                    $this->_return["msg"]="Vous n'êtes pas connecté !";
+                    http_response_code(400);
+                }
             $id_objet=$_POST["id_objet"];
             $objet=$this->_objetMapper->findById($id_objet);;
             if($objet != NULL){
@@ -110,7 +122,14 @@ class ObjectController
         $newDescription=$_POST["newDescription"];
         $newGeom=$_POST["newGeom"];
 
-        if(isset($id_objet) && isset($id_user) && isset($newType) && isset($newDescription) && isset($newGeom) && $this->ctlToken() !=NULL){
+        if(isset($id_objet) && isset($id_user) && isset($newType) && isset($newDescription) && isset($newGeom)){
+            if(ctlToken()){
+                $id_user=$jwt->giveMePayload()->id_user;
+            }else{
+                $this->_return["msg"]="Vous n'êtes pas connecté !";
+                http_response_code(400);
+            }
+
             $objet=$this->_objetMapper->findByIdgin($id_objet);
             if($objet != NULL){
                 if($objet->getId_User() == $id_user){

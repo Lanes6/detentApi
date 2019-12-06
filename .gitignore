@@ -2,9 +2,13 @@ vendor/*
 composer.lock
 application/configs/database.ini
 application/configs/application.ini
+<<<<<<< HEAD
 .idea/
 
 database.ini
 application.ini
 *.html
 
+=======
+.idea/*
+>>>>>>> a421c3a9005c4f1d74a30f20cc5a75ccf75355c3

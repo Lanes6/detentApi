@@ -6,6 +6,7 @@ class Objet implements \JsonSerializable {
     private $_type;
     private $_description;
     private $_geom;
+    private const SRID = 2154;
     private $_configApp;
 
     //CONSTRUCTEURS
@@ -137,4 +138,13 @@ class Objet implements \JsonSerializable {
     {
         $this->_geom = $geom;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getSrid()
+    {
+        return $this->SRID;
+    }
+
 }

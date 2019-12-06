@@ -18,6 +18,7 @@ class MapAcess
             "indexAction"=>0,
             "testComposerAction"=>0,
             "testJWTAction"=>1,
+            "giveMeMyIdAction"=>1,
             "testDBAction"=>0
         );         
         $this->_mapAcess["ws"]["LoginController"] = array(
@@ -29,9 +30,7 @@ class MapAcess
             "createAction"=>0,
             "updateAction"=>1,
             "deleteAction"=>1,
-            "selectByLoginAction"=>1,
-            "selectByUserAction"=>1,
-            "selectByMailAction"=>1
+            "selectByIdUserAction"=>1
         );
         $this->_mapAcess["ws"]["ObjetController"] = array(
             "createAction"=>1,

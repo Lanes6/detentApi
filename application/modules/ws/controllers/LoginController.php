@@ -77,8 +77,8 @@ class LoginController{
                     $user=$this->_userMapper->findByIdUser($payload->id_user);
                     $user->generateSecretToken();
                     $this->_userMapper->updateUser($user);
-                    $this->_return["msg"]="Deconnection effectue";
-                    http_response_code(403);
+                    $this->_return["id_user"]=$user->getId_User();
+                    http_response_code(200);
                 }else{
                     $this->_return["msg"]="Acces refuse !";
                     http_response_code(403);

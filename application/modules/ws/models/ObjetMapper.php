@@ -1,6 +1,7 @@
 <?php
 class ObjetMapper extends Model{
 
+
     public function __construct()
     {
         $this->setTable('public.object');
@@ -31,5 +32,18 @@ class ObjetMapper extends Model{
         $req=$this->getBdd()->prepare('DELETE FROM '.$this->getTable().' WHERE id_objet='.$id_objet);
         $req->execute();
         return true;
+    }
+
+    public function coordToGeomWhithTest($latitude,$longitude){
+
+        $reqGeom=$this->getBdd()->prepare('SELECT ST_SetSRID(ST_MakePoint('.$latitude.','.$longitude.'),'.$this->getSrid().')');
+        $reqGeom->execute();
+        $geom = $reqGeom->fetch(PDO::FETCH_ASSOC);
+        echo 'Coord to Geom ='.$geom;
+
+        $req=$this->getBdd()->prepare('SELECT ST_Contains('.$geom.',(SELECT ST_SetSRID(ST_MakePoint('.$latitude,$longitude.'),'.$this->getSrid().')) FROM public.contours_agglo;');
+        $req->execute();
+
+        return $geom;
     }
 }

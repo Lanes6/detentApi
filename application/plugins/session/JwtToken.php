@@ -43,4 +43,17 @@ class JwtToken
         }
         return $payload;
     }
+
+    public function giveMePayload()
+    {
+        $headers = apache_request_headers();
+        if(isset($headers["Authorization"])) {
+            $authorizationHeader = explode(" ", $headers["Authorization"]);
+            if (isset($authorizationHeader[1])) {
+                $payload = $this->verifyToken($authorizationHeader[1]);
+                return $payload;
+            }
+        }
+        return null;
+    }
 }

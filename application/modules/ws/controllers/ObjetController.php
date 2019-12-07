@@ -27,7 +27,7 @@ class ObjectController
         $latitude=$_POST["latitude"];
         $longitude=$_POST["longitude"];
 
-        if(isset($id_user) && isset($type) && isset($description) && isset($latitude)&& isset($latitude)){
+        if(isset($id_user) && isset($type) && isset($description) && isset($latitude)&& isset($longitude)){
             if(ctlToken()){
                 $id_user=$jwt->giveMePayload()->id_user;
             }else{
@@ -117,12 +117,12 @@ class ObjectController
     public function updateAction(){
 
         $id_objet=$_POST["id_objet"];
-        $id_user=$_POST["id_user"];
         $newType=$_POST["newType"];
         $newDescription=$_POST["newDescription"];
-        $newGeom=$_POST["newGeom"];
+        $newLatitude=$_POST["newLatitude"];
+        $newlongitude=$_POST["newLongitude"];
 
-        if(isset($id_objet) && isset($id_user) && isset($newType) && isset($newDescription) && isset($newGeom)){
+        if(isset($id_objet) && isset($id_user) && isset($newType) && isset($newDescription) && isset($newLatitude)&& isset($newLongitude)){
             if(ctlToken()){
                 $id_user=$jwt->giveMePayload()->id_user;
             }else{
@@ -130,7 +130,9 @@ class ObjectController
                 http_response_code(400);
             }
 
-            $objet=$this->_objetMapper->findByIdgin($id_objet);
+            $geom = $this->$this->_objectMapper->coordToGeomWhithTest($latitude,$longitude);
+            
+            $objet=$this->_objetMapper->findByIdObjet($id_objet);
             if($objet != NULL){
                 if($objet->getId_User() == $id_user){
                     $newObjet= new Objet($id_user,$newType, $newDescription, $newGeom);

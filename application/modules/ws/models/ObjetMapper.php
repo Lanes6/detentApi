@@ -38,10 +38,10 @@ class ObjetMapper extends Model{
 
         $reqGeom=$this->getBdd()->prepare('SELECT ST_SetSRID(ST_MakePoint('.$latitude.','.$longitude.'),'.$this->getSrid().')');
         $reqGeom->execute();
-        $geom = $reqGeom->fetch(PDO::FETCH_ASSOC);
+        $newgeom = $reqGeom->fetch(PDO::FETCH_ASSOC);
         echo 'Coord to Geom ='.$geom;
 
-        $req=$this->getBdd()->prepare('SELECT ST_Contains('.$geom.',(SELECT ST_SetSRID(ST_MakePoint('.$latitude,$longitude.'),'.$this->getSrid().')) FROM public.contours_agglo;');
+        $req=$this->getBdd()->prepare('SELECT ST_Contains('.$geom.','.$newgeom.')) FROM public.contours_agglo;');
         $req->execute();
 
         return $geom;

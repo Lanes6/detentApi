@@ -12,7 +12,10 @@ class MapAcess
         $this->_mapAcess["ws"] = array(
             "IndexController" => array(),
             "UserController" => array(),
-            "LoginController" => array()
+            "LoginController" => array(),
+            "NoteController" => array(),
+            "ReportController" => array(),
+            "PictureController" => array()
         );
         $this->_mapAcess["ws"]["IndexController"] = array(
             "indexAction"=>0,
@@ -32,6 +35,25 @@ class MapAcess
             "selectByLoginAction"=>1,
             "selectByIdUserAction"=>1
         );
+
+        $this->_mapAcess["ws"]["NoteController"] = array(
+            "createAction"=>1, 
+            "selectAction"=>1
+        );
+
+        $this->_mapAcess["ws"]["ReportController"] = array(
+            "createAction"=>1, 
+            "deleteAction"=>1,
+            "selectByIdAction"=>1,
+            "selectByObjectAction"=>1
+        );
+
+        $this->_mapAcess["ws"]["PictureController"] = array(
+            "createAction"=>1, 
+            "selectByIdAction"=>1,
+            "selectByObjectAction"=>1
+        );
+
     }
 
     //return l'accès du triplet module-controller-action

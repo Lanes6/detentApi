@@ -119,25 +119,25 @@ class ObjetController
         $id_objet=$_POST["id_objet"];
         $newType=$_POST["newType"];
         $newDescription=$_POST["newDescription"];
-        $newLatitude=$_POST["newLatitude"];
-        $newlongitude=$_POST["newLongitude"];
 
-        if(isset($id_objet) && isset($id_user) && isset($newType) && isset($newDescription) && isset($newLatitude)&& isset($newLongitude)){
-            if(ctlToken()){
-                $id_user=$jwt->giveMePayload()->id_user;
+        if(isset($id_objet) && isset($newType) && isset($newDescription)){
+            if($this->ctlToken()){
+                $id_user=$this->jwt->giveMePayload()->id_user;
             }else{
                 $this->_return["msg"]="Vous n'êtes pas connecté !";
                 http_response_code(400);
             }
 
-            $geom = $this->$this->_objetMapper->coordToGeomWhithTest($newLatitude,$newLongitude);
-
             $objet=$this->_objetMapper->findByIdObjet($id_objet);
+
             if($objet != NULL){
                 if($objet->getId_User() == $id_user){
-                    $newObjet= new Objet($id_user,$newType, $newDescription, $newGeom);
-                    //$newObjet->setId_Objet($objet->getId_Objet());
+
+                    $newObjet= new Objet($id_user,$newType, $newDescription, $objet->getGeom());
+                    $newObjet->setId_Objet($objet->getId_Objet());
+
                     $res=$this->_objetMapper->updateObjet($newObjet);
+
                     if($res){
                         $this->_return["msg"]="L'objet ".$newObjet->getType()." à été bien modifié !";
                         http_response_code(200);

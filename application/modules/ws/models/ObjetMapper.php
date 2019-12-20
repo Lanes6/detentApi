@@ -25,7 +25,7 @@ class ObjetMapper extends Model{
     }
 
     public function updateObjet(Objet $newObjet){
-        $req=$this->getBdd()->prepare(' UPDATE '.$this->getTable().' SET type=\''.$newObjet->getType().'\', description=\''.$newObjet->getDescription().'\', geom=\''.$newObjet->getGeom().'\' WHERE id_objet=\''.$newObjet->getId_Objet().'\' AND id_user=\''.$user->getId_User().'\'');
+        $req=$this->getBdd()->prepare(' UPDATE '.$this->getTable().' SET type=\''.$newObjet->getType().'\', description=\''.$newObjet->getDescription().'\' WHERE id_object=\''.$newObjet->getId_Objet().'\'');
         $req->execute();
         return true;
     }

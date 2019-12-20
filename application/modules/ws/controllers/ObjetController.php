@@ -1,14 +1,14 @@
 <?php
 
-class ObjectController
+class ObjetController
 {
-    private $_objectMapper;
+    private $_objetMapper;
     private $_return;
     private $jwt;
 
     public function __construct()
     {
-        $this->_objectMapper=new ObjectMapper();
+        $this->_objetMapper=new ObjetMapper();
         http_response_code(500);
         $this->_return=[];
         $this->jwt = new JwtToken();
@@ -16,7 +16,7 @@ class ObjectController
 
     public function ctlToken(){
         //$this->jwt = new JwtToken();
-        return ($jwt->giveMePayload() != NULL);
+        return ($this->jwt->giveMePayload() != NULL);
     }
     
     
@@ -27,27 +27,27 @@ class ObjectController
         $latitude=$_POST["latitude"];
         $longitude=$_POST["longitude"];
 
-        if(isset($id_user) && isset($type) && isset($description) && isset($latitude)&& isset($longitude)){
-            if(ctlToken()){
-                $id_user=$jwt->giveMePayload()->id_user;
+        if(isset($type) && isset($description) && isset($latitude)&& isset($longitude)){
+            if($this->ctlToken()){
+                $id_user=$this->jwt->giveMePayload()->id_user;
             }else{
                 $this->_return["msg"]="Vous n'êtes pas connecté !";
                 http_response_code(400);
             }
-            $geom = $this->$this->_objectMapper->coordToGeomWhithTest($latitude,$longitude);
-            //$testoord=$this->ObjectMapper->testCoordGeom($geom);
+            $geom = $this->_objetMapper->coordToGeomWhithTest($latitude,$longitude);
+            
             if($geom != NULL){
                 $objet= new Objet($id_user,$type,$description, $geom);
                 $res = $this->_objetMapper->createObjet($objet);
                 if($res){
-                    $this->_return["msg"]="Le nouveau objet ".$objet->getType()." à été bien créé !";
+                    $this->_return["msg"]="Le nouveau objet ".$objet->getType()." a ete bien cree !";
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l'objet";
                     http_response_code(500);
                 }
             }else{
-                $this->_return["msg"]="Coordonnées de l'objet en dehors de l'agglomération";
+                $this->_return["msg"]="Coordonnees de l'objet en dehors de l'agglomération";
                 http_response_code(400);
             }
         }else{
@@ -61,7 +61,7 @@ class ObjectController
     public function deleteAction(){
 
         if(isset($_POST["id_objet"])){
-            if(ctlToken()){
+            if($this->ctlToken()){
                 $id_user=$jwt->giveMePayload()->id_user;
             }else{
                 $this->_return["msg"]="Vous n'êtes pas connecté !";
@@ -130,8 +130,8 @@ class ObjectController
                 http_response_code(400);
             }
 
-            $geom = $this->$this->_objectMapper->coordToGeomWhithTest($latitude,$longitude);
-            
+            $geom = $this->$this->_objetMapper->coordToGeomWhithTest($newLatitude,$newLongitude);
+
             $objet=$this->_objetMapper->findByIdObjet($id_objet);
             if($objet != NULL){
                 if($objet->getId_User() == $id_user){

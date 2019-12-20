@@ -2,13 +2,10 @@
 
 class Objet implements \JsonSerializable {
     private $_id_objet;
-    //private $_id_user;
+    private $_id_user;
     private $_type;
     private $_description;
-    private $_latitude;
-    private $_longitude;
-    //private $_geom;
-    private const SRID = 2154;
+    private $_geom;
     private $_configApp;
 
     //CONSTRUCTEURS
@@ -22,11 +19,11 @@ class Objet implements \JsonSerializable {
         {
             case 4:
                 $this->_id_objet = 0;
-                //$this->_id_user = $args[0];
-                $this->_type = $args[0];
-                $this->_description = $args[1];
-                $this->_latitude = $args[2];
-                $this->_longitude = $args[3];
+                $this->_id_user = $args[0];
+                $this->_type = $args[1];
+                $this->_description = $args[2];
+                $this->_geom = $args[3];
+
             break;
 
             case 1://?????
@@ -64,10 +61,10 @@ class Objet implements \JsonSerializable {
         $this->_id_objet = $id_objet;
     }
 
-    /*/**
+    /**
      * @return mixed
      */
-    /*public function getId_User()
+    public function getId_User()
     {
         return $this->_id_user;
     }
@@ -75,13 +72,13 @@ class Objet implements \JsonSerializable {
     /**
      * @param mixed $id_user
      */
-    /*public function setId_User($id_user)
+    public function setId_User($id_user)
     {
         $id_user=(int)$id_user;
         if($id_user > 0) {
             $this->_id_user = $id_user;
         }
-    }*/
+    }
 
     /**
      * @return mixed
@@ -126,10 +123,10 @@ class Objet implements \JsonSerializable {
         return $vars;
     }
 
-    /*/**
+    /**
      * @return mixed
      */
-    /*public function getGeom()
+    public function getGeom()
     {
         return $this->_geom;
     }
@@ -137,49 +134,10 @@ class Objet implements \JsonSerializable {
     /**
      * @param mixed $geom
      */
-    /*public function setGeom($geom)
+    public function setGeom($geom)
     {
         $this->_geom = $geom;
-    }*/
-
-    /**
-     * @return mixed
-     */
-    public function getLatitude()
-    {
-        return $this->_latitude;
     }
 
-    /**
-     * @param mixed $latitude
-     */
-    public function setLatitude($latitude)
-    {
-        $this->_latitude = $latitude;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getLongitude()
-    {
-        return $this->_longitude;
-    }
-
-    /**
-     * @param mixed $longitude
-     */
-    public function setLongitude($longitude)
-    {
-        $this->_longitude = $longitude;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSrid()
-    {
-        return $this->SRID;
-    }
 
 }

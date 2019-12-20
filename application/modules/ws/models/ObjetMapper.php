@@ -2,6 +2,8 @@
 class ObjetMapper extends Model{
 
 
+    private $SRID = 2154;
+ 
     public function __construct()
     {
         $this->setTable('public.object');
@@ -29,21 +31,46 @@ class ObjetMapper extends Model{
     }
 
     public function deleteObjet($id_objet){
-        $req=$this->getBdd()->prepare('DELETE FROM '.$this->getTable().' WHERE id_objet='.$id_objet);
+        $req=$this->getBdd()->prepare('DELETE FROM '.$this->getTable().' WHERE id_object='.$id_objet);
         $req->execute();
         return true;
     }
 
+    public function getGeomBD(){
+        $req=$this->getBdd()->prepare('SELECT geom FROM public.outline WHERE type=?');
+        $req->execute(array('contour_agglo'));
+        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+            return array_pop($row);
+        }
+    }
+
     public function coordToGeomWhithTest($latitude,$longitude){
-
-        $reqGeom=$this->getBdd()->prepare('SELECT ST_SetSRID(ST_MakePoint('.$latitude.','.$longitude.'),'.$this->getSrid().')');
-        $reqGeom->execute();
-        $newgeom = $reqGeom->fetch(PDO::FETCH_ASSOC);
-        echo 'Coord to Geom ='.$geom;
-
-        $req=$this->getBdd()->prepare('SELECT ST_Contains('.$geom.','.$newgeom.')) FROM public.contours_agglo;');
+        $newGeom;
+        $req=$this->getBdd()->prepare('SELECT ST_SetSRID(ST_MakePoint('.$longitude.','.$latitude.'),'.$this->getSrid().')');
         $req->execute();
+        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+            $newGeom = array_pop($row);
+        }
 
-        return $geom;
+        $geom = $this->getGeomBD();
+
+        $req2=$this->getBdd()->prepare('SELECT ST_Contains(?::Geometry,?::Geometry)');
+        $req2->execute(array($geom,$newGeom));
+       
+        while ($row = $req2->fetch(PDO::FETCH_ASSOC)) {
+            if(array_pop($row)){
+                return $newGeom;
+            }
+            return null;
+        }
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getSrid()
+    {
+        return $this->SRID;
     }
 }

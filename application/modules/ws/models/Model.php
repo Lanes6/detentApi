@@ -15,7 +15,7 @@ abstract class Model
     {
         $configBdd = Retrinko\Ini\IniFile::load(PATH_CONFIG."database.ini");
         self::$_bdd = new PDO('pgsql:host='.$configBdd->get('database', 'host').';dbname='.$configBdd->get('database', 'dbname'), $configBdd->get('database', 'username'), $configBdd->get('database', 'password'));
-        self::$_bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+        self::$_bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
     //RECUPERE LA CONNEXION A LA BDD

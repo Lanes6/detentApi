@@ -32,6 +32,12 @@ class MapAcess
             "deleteAction"=>1,
             "selectByIdUserAction"=>1
         );
+        $this->_mapAcess["ws"]["ObjetController"] = array(
+            "createAction"=>1,
+            "updateAction"=>1,
+            "deleteAction"=>1,
+            "selectByIdAction"=>1
+        );
     }
 
     //return l'accès du triplet module-controller-action

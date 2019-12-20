@@ -45,9 +45,14 @@ class UserController
         $id_user=$jwt->giveMePayload()->id_user;
         $user=$this->_userMapper->findByIdUser($id_user);
         if($user != NULL){
-            $this->_userMapper->deleteUser($user->getId_User());
-            $this->_return["id_user"]=$user->getId_User();
-            http_response_code(200);
+            $res = $this->_userMapper->deleteUser($user->getId_User());
+            if($res){
+                $this->_return["id_user"]=$user->getId_User();
+                http_response_code(200);
+            }else{
+                $this->_return["msg"]="Erreur lors de la supression de l utilisateur";
+                http_response_code(500);
+            }
         }else{
             $this->_return["msg"]="Aucun utilisateur ne possede cet id_user";
             http_response_code(404);
@@ -79,10 +84,14 @@ class UserController
             if($user != NULL && $user->checkPassword($_POST["oldPassword"])){
                 $newUser= new User($_POST["newLogin"],$_POST["newMail"],$_POST["newPassword"]);
                 $newUser->setId_User($user->getId_User());
-
-                $this->_userMapper->updateUser($newUser);
-                $this->_return["id_user"]=$newUser->getId_User();
-                http_response_code(200);
+                $res = $this->_userMapper->updateUser($newUser);
+                if(res){
+                    $this->_return["id_user"]=$newUser->getId_User();
+                    http_response_code(200);
+                }else{
+                    $this->_return["msg"]="Erreur lors de la modification de l utilisateur";
+                    http_response_code(500);
+                }
             }else{
                 $this->_return["msg"]="Identifiants invalides";
                 http_response_code(403);

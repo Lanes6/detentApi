@@ -319,9 +319,8 @@ WITH (
   check_option=cascaded
 ) AS
 SELECT id_object, id_user, type, description, geom
-FROM public.object o
-WHERE type='banc'
-AND EXISTS ( SELECT id_object FROM data.report r WHERE o.id_object = r.id_object);
+FROM public.object
+WHERE type='banc_report';
 
 ALTER TABLE public.banc_reported_view
     OWNER TO postgres;
@@ -331,9 +330,8 @@ WITH (
   check_option=cascaded
 ) AS
 SELECT id_object, id_user, type, description, geom
-FROM public.object o
-WHERE type='toilet'
-AND EXISTS ( SELECT id_object FROM data.report r WHERE o.id_object = r.id_object);
+FROM public.object
+WHERE type='toilet_report';
 
 ALTER TABLE public.toilet_reported_view
     OWNER TO postgres;
@@ -343,9 +341,8 @@ WITH (
   check_option=cascaded
 ) AS
 SELECT id_object, id_user, type, description, geom
-FROM public.object o
-WHERE type='pav_verre'
-AND EXISTS ( SELECT id_object FROM data.report r WHERE o.id_object = r.id_object);
+FROM public.object
+WHERE type='pav_verre_report';
 
 ALTER TABLE public.pav_verre_reported_view
     OWNER TO postgres;
@@ -355,9 +352,8 @@ WITH (
   check_option=cascaded
 ) AS
 SELECT id_object, id_user, type, description, geom
-FROM public.object o
-WHERE type='trash'
-AND EXISTS ( SELECT id_object FROM data.report r WHERE o.id_object = r.id_object);
+FROM public.object
+WHERE type='trash_report';
 
 ALTER TABLE public.trash_reported_view
     OWNER TO postgres;
@@ -367,9 +363,8 @@ WITH (
   check_option=cascaded
 ) AS
 SELECT id_object, id_user, type, description, geom
-FROM public.object o
-WHERE type='tree'
-AND EXISTS ( SELECT id_object FROM data.report r WHERE o.id_object = r.id_object);
+FROM public.object
+WHERE type='tree_report';
 
 ALTER TABLE public.tree_reported_view
     OWNER TO postgres;

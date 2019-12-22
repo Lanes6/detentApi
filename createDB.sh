@@ -52,6 +52,7 @@ PGPASSWORD="${passwordDbConf}" psql -h ${ipDbConf} -U ${userDbConf} -d ${nameDbC
 PGPASSWORD="${passwordDbConf}" psql -h ${ipDbConf} -U ${userDbConf} -d ${nameDbConf} -f /var/serverScript/tree/tree.sql &&
 PGPASSWORD="${passwordDbConf}" psql -h ${ipDbConf} -U ${userDbConf} -d ${nameDbConf} -f /var/serverScript/trash/trash.sql &&
 PGPASSWORD="${passwordDbConf}" psql -h ${ipDbConf} -U ${userDbConf} -d ${nameDbConf} -f /var/serverScript/sql/postFill.sql &&
+PGPASSWORD="${passwordDbConf}" psql -h ${ipDbConf} -U ${userDbConf} -d ${nameDbConf} -f /var/serverScript/sql/fillTestData.sql &&
 
 rm -rf /var/serverScript/toilet  &&
 rm -rf /var/serverScript/pav_verre  &&

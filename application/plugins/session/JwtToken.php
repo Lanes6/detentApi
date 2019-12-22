@@ -50,8 +50,7 @@ class JwtToken
         if(isset($headers["Authorization"])) {
             $authorizationHeader = explode(" ", $headers["Authorization"]);
             if (isset($authorizationHeader[1])) {
-                $payload = $this->verifyToken($authorizationHeader[1]);
-                return $payload;
+                return $this->verifyToken($authorizationHeader[1]);
             }
         }
         return null;

@@ -22,8 +22,8 @@ class UserController
             if($userLogin == NULL && $userMail == NULL){
                 $user= new User($login,$mail,$password);
                 $res = $this->_userMapper->createUser($user);
-                if($res){
-                    $this->_return["id_user"]=$this->_userMapper->findByLogin($login)->getId_User();
+                if(isset($res)){
+                    $this->_return["id_user"]=$res;
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l utilisateur";
@@ -85,7 +85,7 @@ class UserController
                 $newUser= new User($_POST["newLogin"],$_POST["newMail"],$_POST["newPassword"]);
                 $newUser->setId_User($user->getId_User());
                 $res = $this->_userMapper->updateUser($newUser);
-                if(res){
+                if($res){
                     $this->_return["id_user"]=$newUser->getId_User();
                     http_response_code(200);
                 }else{

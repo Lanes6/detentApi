@@ -25,8 +25,8 @@ class ObjetController
             if($geom != NULL){
                 $objet= new Objet($id_user,$type,$description, $geom);
                 $res = $this->_objetMapper->createObjet($objet);
-                if($res){
-                    $this->_return["msg"]="Le nouveau objet ".$objet->getType()." a ete bien cree !";
+                if(isset($res)){
+                    $this->_return["id_objet"]=$res;
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Erreur lors de la creation de l'objet";
@@ -51,7 +51,7 @@ class ObjetController
             if($objet != NULL && $objet->getId_User() == $this->jwt->giveMePayload()->id_user){
                 $res=$this->_objetMapper->deleteObjet($id_objet);
                 if($res){
-                    $this->_return["msg"]="L objet ".$objet->getType()." a ete bien supprime";
+                    $this->_return["id_objet"]=$id_objet;
                     http_response_code(200);
                 }else{
                     $this->_return["msg"]="Probleme lors de la suppression de l objet";
@@ -76,7 +76,6 @@ class ObjetController
                 $this->_select($objet);
             }else{
                 $this->_return["msg"]="Aucun objet ne possede cet id";
-                $this->_return["objet"]=null;
                 http_response_code(404);
             }
         }else{
@@ -98,9 +97,8 @@ class ObjetController
                     $newObjet= new Objet($id_user,$newType, $newDescription, $objet->getGeom());
                     $newObjet->setId_Object($objet->getId_Object());
                     $res=$this->_objetMapper->updateObjet($newObjet);
-                    $this->_return["msg2"]= $res;
                     if($res){
-                        $this->_return["msg"]="L objet ".$newObjet->getType()." a ete bien modifie !";
+                        $this->_return["msg"]=$id_objet;
                         http_response_code(200);
                     }else{
                         $this->_return["msg"]="Erreur lors de la modification de l objet";

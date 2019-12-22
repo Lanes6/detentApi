@@ -38,6 +38,21 @@ class MapAcess
             "deleteAction"=>1,
             "selectByIdAction"=>1
         );
+        $this->_mapAcess["ws"]["NoteController"] = array(
+            "createAction"=>1,
+            "selectAction"=>1
+        );
+        $this->_mapAcess["ws"]["ReportController"] = array(
+            "createAction"=>1,
+            "deleteAction"=>1,
+            "selectByIdAction"=>1,
+            "selectByObjetAction"=>1
+        );
+        $this->_mapAcess["ws"]["PictureController"] = array(
+            "createAction"=>1,
+            "selectByIdAction"=>1,
+            "selectByObjectAction"=>1
+        );
     }
 
     //return l'accès du triplet module-controller-action

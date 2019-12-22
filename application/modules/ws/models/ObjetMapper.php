@@ -1,17 +1,12 @@
 <?php
-class ObjetMapper extends Model{
+class ObjetMapper extends ModelMapper{
 
     private $SRID = 2154;
 
-    public function __construct()
-    {
-        $this->setTable('public.object');
-    }
-
     public function findByIdObjet($id_object){
         try {
-            $req = $this->getBdd()->prepare('SELECT * FROM ' . $this->getTable() . ' WHERE id_object=?');
-            $req->execute(array($id_object));
+            $req = $this->getBdd()->prepare('SELECT * FROM '.$this->getObjectTable().' WHERE id_object=?');
+            $req->execute(array( $id_object));
             while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
                 return new Objet($row);
             }
@@ -23,17 +18,17 @@ class ObjetMapper extends Model{
 
     public function createObjet(Objet $objet){
         try {
-            $req=$this->getBdd()->prepare('INSERT INTO '.$this->getTable().' (id_user, type, description, geom) VALUES (?,?,?,?)');
+            $req=$this->getBdd()->prepare('INSERT INTO '.$this->getObjectTable().' (id_user, type, description, geom) VALUES (?,?,?,?)');
             $req->execute(array($objet->getId_User(),$objet->getType(),$objet->getDescription(),$objet->getGeom()));
-            return true;
+            return $this->getBdd() -> lastInsertId();
         }catch (Exception $e){
-            return false;
+            return null;
         }
     }
 
     public function updateObjet(Objet $newObjet){
         try {
-            $req = $this->getBdd()->prepare('UPDATE ' . $this->getTable() . ' SET type= ?, description= ? WHERE id_object= ?');
+            $req = $this->getBdd()->prepare('UPDATE '.$this->getObjectTable().' SET type= ?, description= ? WHERE id_object= ?');
             $req->execute(array($newObjet->getType(), $newObjet->getDescription(), $newObjet->getId_Object()));
             return true;
         }catch (Exception $e){
@@ -43,7 +38,7 @@ class ObjetMapper extends Model{
 
     public function deleteObjet($id_object){
         try {
-            $req=$this->getBdd()->prepare('DELETE FROM '.$this->getTable().' WHERE id_object=?');
+            $req=$this->getBdd()->prepare('DELETE FROM '.$this->getObjectTable().' WHERE id_object=?');
             $req->execute(array($id_object));
             return true;
         }catch (Exception $e){
@@ -53,7 +48,7 @@ class ObjetMapper extends Model{
 
     public function getContourAgloGeom(){
         try {
-            $req = $this->getBdd()->prepare('SELECT geom FROM public.outline WHERE type=\'contour_agglo\'');
+            $req = $this->getBdd()->prepare('SELECT geom FROM '.$this->getOutlineTable().' WHERE type=\'contour_agglo\'');
             $req->execute();
             while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
                 return array_pop($row);

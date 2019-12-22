@@ -18,12 +18,16 @@ class LoginController{
             $user=$this->_userMapper->findByLogin($login);
             if($user != NULL && $user->checkPassword($password)){
                 $user->generateSecretToken();
-                $this->_userMapper->updateUser($user);
-
-                $jwtToken= new JwtToken();
-                $this->_return["jwtRefresh"]=$jwtToken->createRefreshToken($user);
-                $this->_return["jwt"]=$jwtToken->createToken($user);
-                http_response_code(200);
+                $res = $this->_userMapper->updateUser($user);
+                if($res) {
+                    $jwtToken = new JwtToken();
+                    $this->_return["jwtRefresh"] = $jwtToken->createRefreshToken($user);
+                    $this->_return["jwt"] = $jwtToken->createToken($user);
+                    http_response_code(200);
+                }else{
+                    $this->_return["msg"]="Erreur pendant le login";
+                    http_response_code(500);
+                }
             }else{
                 $this->_return["msg"]="identifiants invalides";
                 http_response_code(403);
@@ -76,9 +80,14 @@ class LoginController{
                 if ($payload != null){
                     $user=$this->_userMapper->findByIdUser($payload->id_user);
                     $user->generateSecretToken();
-                    $this->_userMapper->updateUser($user);
-                    $this->_return["id_user"]=$user->getId_User();
-                    http_response_code(200);
+                    $res = $this->_userMapper->updateUser($user);
+                    if($res) {
+                        $this->_return["id_user"]=$user->getId_User();
+                        http_response_code(200);
+                    }else{
+                        $this->_return["msg"]="Erreur pendant la deconnexion";
+                        http_response_code(500);
+                    }
                 }else{
                     $this->_return["msg"]="Acces refuse !";
                     http_response_code(403);

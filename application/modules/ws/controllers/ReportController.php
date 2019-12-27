@@ -72,7 +72,7 @@ class ReportController
         echo(json_encode($this->_return));
     }
 
-    public function selectByIdAction(){
+    public function selectByIdReportAction(){
         if(isset($_POST["id_report"])){
             $id_report=$_POST["id_report"];
             $report=$this->_reportMapper->findReport($id_report);
@@ -89,7 +89,7 @@ class ReportController
         echo(json_encode($this->_return));
     }
 
-    public function selectByobjetAction(){
+    public function selectByIdObjetAction(){
         if(isset($_POST["id_objet"])){
             $id_objet=$_POST["id_objet"];
             $report=$this->_reportMapper->findReobject($id_objet);

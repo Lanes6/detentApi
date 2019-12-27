@@ -45,8 +45,8 @@ class MapAcess
         $this->_mapAcess["ws"]["ReportController"] = array(
             "createAction"=>1,
             "deleteAction"=>1,
-            "selectByIdAction"=>1,
-            "selectByObjetAction"=>1
+            "selectByIdReportAction"=>1,
+            "selectByIdObjetAction"=>1
         );
         $this->_mapAcess["ws"]["PictureController"] = array(
             "createAction"=>1,

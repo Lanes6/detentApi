@@ -21,19 +21,24 @@ class ObjetController
             $latitude=$_POST["latitude"];
             $longitude=$_POST["longitude"];
             $id_user=$this->jwt->giveMePayload()->id_user;
-            $geom = $this->_objetMapper->coordToGeomWhithTest($latitude,$longitude);
-            if($geom != NULL){
-                $objet= new Objet($id_user,$type,$description, $geom);
-                $res = $this->_objetMapper->createObjet($objet);
-                if(isset($res)){
-                    $this->_return["id_objet"]=$res;
-                    http_response_code(200);
-                }else{
-                    $this->_return["msg"]="Erreur lors de la creation de l'objet";
-                    http_response_code(500);
+            if($type == "tree_suggestion" || $type == "banc_suggestion" || "trash_suggestion" || $type == "pav_verre_suggestion" || $type == "toilet_suggestion"){
+                $geom = $this->_objetMapper->coordToGeomWhithTest($latitude,$longitude);
+                if($geom != NULL) {
+                    $objet = new Objet($id_user, $type, $description, $geom);
+                    $res = $this->_objetMapper->createObjet($objet);
+                    if (isset($res)) {
+                        $this->_return["id_objet"] = $res;
+                        http_response_code(200);
+                    } else {
+                        $this->_return["msg"] = "Erreur lors de la creation de l'objet";
+                        http_response_code(500);
+                    }
+                }else {
+                    $this->_return["msg"] = "Erreur lors de la creation du point verifier que l objet est dans l agglo";
+                    http_response_code(400);
                 }
             }else{
-                $this->_return["msg"]="Erreur lors de la creation du point verifier que l objet est dans l agglo";
+                $this->_return["msg"]="mauvais type";
                 http_response_code(400);
             }
         }else{
@@ -68,7 +73,7 @@ class ObjetController
         echo(json_encode($this->_return));
     }
 
-    public function selectByIdAction(){
+   /* public function selectByIdAction(){
         if(isset($_POST["id_objet"])){
             $id_objet=$_POST["id_objet"];
             $objet=$this->_objetMapper->findByIdObjet($id_objet);
@@ -80,6 +85,26 @@ class ObjetController
             }
         }else{
             $this->_return["msg"]="Parametre id_objet absent";
+            http_response_code(400);
+        }
+        echo(json_encode($this->_return));
+    }*/
+
+    public function selectByIdReportAction(){
+        if(isset($_POST["id_report"])){
+            $id_object=$_POST["id_object"];
+            $jwtToken = new JwtToken();
+            $id_user=$jwtToken->giveMePayload()->id_user;
+            $object=$this->_reportMapper->findReObject($id_object);
+            if($object != NULL){
+                $report=$this->_reportMapper->findReportByUserObject($id_user,$id_object);
+                $this->_select($report);
+            }else{
+                $this->_return["msg"]="Aucun object correspondant";
+                http_response_code(404);
+            }
+        }else{
+            $this->_return["msg"]="1 ou plusieurs parametres absents";
             http_response_code(400);
         }
         echo(json_encode($this->_return));

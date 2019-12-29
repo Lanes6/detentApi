@@ -43,16 +43,21 @@ class PictureMapper extends Model{
     }
 
     public function findPictures($id_object){
-        /*$req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE id_object=\''.$id_object.'\'');
+        $req=$this->getBdd()->prepare('SELECT id_picture as id FROM '.$this->getTable().' WHERE id_object=\''.$id_object.'\'');
         $req->execute();
+        $res = array();
         while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            return new Picture($row);
-        }*/
-        return null;
+            array_push($res,$row['id']);
+        }
+        if(count($res)!=0){
+            return $res;
+        }else{
+            return null;
+        }
     }
 
     public function createPicture(Picture $picture){
-        $req=$this->getBdd()->prepare('INSERT INTO '.$this->getTable().'(id_user,id_object,saison,file) VALUES (\''.$picture->getId_User().'\', \''.$picture->getId_Object().'\', \''.$picture->getSaison().'\', \''.$picture->getFile().'\')');
+        $req=$this->getBdd()->prepare('INSERT INTO '.$this->getTable().'(id_user,id_object,saison,file,name) VALUES (\''.$picture->getId_User().'\', \''.$picture->getId_Object().'\', \''.$picture->getSaison().'\', \''.$picture->getFile().'\',\''.$picture->getName().'\')');
         $req->execute();
         return true;
     }

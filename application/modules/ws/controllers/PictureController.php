@@ -25,7 +25,7 @@ class PictureController
                     $arbre=$this->_pictureMapper->findArbre($id_object);
                     if(isset($arbre)){
                         $data = pg_escape_bytea(file_get_contents($file['tmp_name']));
-                        $picture= new Picture($id_user,$id_object,$saison,$data);
+                        $picture= new Picture($id_user,$id_object,$saison,$data,$file['name']);
                         $res = $this->_pictureMapper->createPicture($picture);
                         $this->_return["id_picture"]=$this->_pictureMapper->findPictureByUserObject($id_user,$id_object,$data)->getId_Picture();
                         file_put_contents("image1.jpg", file_get_contents($file['tmp_name']));
@@ -58,10 +58,8 @@ class PictureController
                 $this->_return["id_user"]=$picture->getId_User();
                 $this->_return["id_object"]=$picture->getId_Object();
                 $this->_return["saison"]=$picture->getSaison();
-                header('Content-type: image/jpeg');
-                echo pg_unescape_bytea($picture->getFile());
-                file_put_contents("image2.jpg",pg_unescape_bytea($picture->getFile()));
-                $this->_return["file"]='a';
+                file_put_contents('/tmp/'.$picture->getName(),stream_get_contents($picture->getFile()));
+                $this->_return["file"]='/tmp/'.$picture->getName();
                 http_response_code(200);
             }else{
                 $this->_return["msg"]="Aucun photo correspondant";
@@ -75,11 +73,15 @@ class PictureController
     }
 
     public function selectByObjectAction(){
-       /*if(isset($_POST["id_object"])){
+       if(isset($_POST["id_object"])){
             $id_object=$_POST["id_object"];
             $pictures=$this->_pictureMapper->findPictures($id_object);
             if($pictures != NULL){
-                $this->_return["id_object"]=$picture->getId_Object();
+                $index = 1;
+                foreach ($pictures as $key => $value) {
+                   $this->_return["id_picture_".$index]=$value;
+                   $index++;
+                }
                 http_response_code(200);
             }else{
                 $this->_return["msg"]="Aucun photo correspondant";
@@ -89,6 +91,6 @@ class PictureController
             $this->_return["msg"]="1 ou plusieurs parametres absents";
             http_response_code(400);
        }
-       echo(json_encode($this->_return));*/
+       echo(json_encode($this->_return));
     }
 }

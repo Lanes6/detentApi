@@ -6,6 +6,7 @@ class Picture {
     private $_id_object;
     private $_saison;
     private $_file;
+    private $_name;
 
     //CONSTRUCTEURS
     public function __construct()
@@ -14,12 +15,13 @@ class Picture {
         $args = func_get_args();
         switch($ctp)
         {
-            case 4:
+            case 5:
                 $this->_id_picture = 0;
                 $this->_id_user = $args[0];
                 $this->_id_object = $args[1];
                 $this->_saison = $args[2];
                 $this->_file = $args[3];
+                $this->_name = $args[4];
             break;
             case 1:
                 $this->hydrate($args[0]);
@@ -89,4 +91,14 @@ class Picture {
      * @param mixed $file
      */
     public function setFile($file){ $this->_file = $file; }
+
+    /**
+     * @return mixed
+     */
+    public function getName(){ return $this->_name; }
+
+    /**
+     * @param mixed $name
+     */
+    public function setName($name){ $this->_name = $name; }
 }

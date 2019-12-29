@@ -28,7 +28,7 @@ class PictureController
                         $picture= new Picture($id_user,$id_object,$saison,$data);
                         $res = $this->_pictureMapper->createPicture($picture);
                         $this->_return["id_picture"]=$this->_pictureMapper->findPictureByUserObject($id_user,$id_object,$data)->getId_Picture();
-                        echo '<h1>oo</h1>';
+                        file_put_contents("image1.jpg", file_get_contents($file['tmp_name']));
                         http_response_code(200);
                     }else{
                         $this->_return["msg"]="L'object n'est pas un arbre";
@@ -58,8 +58,10 @@ class PictureController
                 $this->_return["id_user"]=$picture->getId_User();
                 $this->_return["id_object"]=$picture->getId_Object();
                 $this->_return["saison"]=$picture->getSaison();
-               
-                $this->_return["file"]='';
+                header('Content-type: image/jpeg');
+                echo pg_unescape_bytea($picture->getFile());
+                file_put_contents("image2.jpg",pg_unescape_bytea($picture->getFile()));
+                $this->_return["file"]='a';
                 http_response_code(200);
             }else{
                 $this->_return["msg"]="Aucun photo correspondant";

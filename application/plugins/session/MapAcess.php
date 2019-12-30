@@ -51,7 +51,7 @@ class MapAcess
         $this->_mapAcess["ws"]["PictureController"] = array(
             "createAction"=>1,
             "selectByIdAction"=>1,
-            "selectByObjectAction"=>1
+            "selectByObjetAction"=>1
         );
     }
 

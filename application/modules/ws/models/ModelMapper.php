@@ -8,6 +8,7 @@ abstract class ModelMapper
     private $_userTable = 'data.user';
     private $_reportTable = 'data.report';
     private $_outlineTable = 'public.outline';
+    private $_pictureTable = 'data.picture';
 
     public function __construct()
     {
@@ -23,6 +24,12 @@ abstract class ModelMapper
     }
 
     //RECUPERE LA CONNEXION A LA BDD
+
+    public function getPictureTable(): string
+    {
+        return $this->_pictureTable;
+    }
+
     protected function getBdd()
     {
         if($this->_bdd==null){

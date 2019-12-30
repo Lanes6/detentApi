@@ -50,7 +50,8 @@ CREATE TABLE data.picture
     id_user bigint NOT NULL,
     id_object bigint NOT NULL,
     saison text,
-    file bit[] NOT NULL,
+    name text,
+    file bytea [] NOT NULL,
     PRIMARY KEY (id_picture)
 )
 WITH (

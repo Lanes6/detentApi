@@ -4,3 +4,6 @@ RewriteCond %{REQUEST_FILENAME} !-d
 
 RewriteCond %{REQUEST_URI} !^/?(tempP)/
 RewriteRule ^(.*)$ index.php?url=$1
+
+php_value upload_max_filesize 40M
+php_value post_max_size 42M

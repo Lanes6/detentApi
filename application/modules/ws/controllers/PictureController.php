@@ -20,18 +20,15 @@ class PictureController
             $saison=$_POST["saison"];
             $file=$_FILES["file"];
             $jwtToken = new JwtToken();
-            $id_user=$jwtToken->giveMePayload()->id_user;
-            if($file['type'] == "image/jpeg" or $file['type'] == "image/png"){
+            $id_user = $jwtToken->giveMePayload()->id_user;
+            $type = end(explode(".", $file["name"]));
+            if($type == "jpeg" or $type == "jpg" or $type == "png"){
                 $objet=$this->_objetMapper->findByIdObjet($id_objet);
                 if(isset($objet)){
                     if ($objet->getType() == 'tree' && !strpos($objet->getType(), 'suggestion')) {
                         $now = date('Y-m-d H:i:s');
-                        $now = str_replace(array(" ", ".", "-", ":"), "_", $now);
-                        if ($file['type'] == "image/jpeg") {
-                            $name = $now . '.jpg';
-                        } else {
-                            $name = $now . '.png';
-                        }
+                        $name = str_replace(array(" ", ".", "-", ":"), "_", $now);
+                        $name .= ".".$type;
                         $data = pg_escape_bytea(file_get_contents($file['tmp_name']));
                         $picture = new Picture($id_user, $id_objet, $saison, $data, $name);
                         $res = $this->_pictureMapper->createPicture($picture);
@@ -51,14 +48,14 @@ class PictureController
                     http_response_code(404);
                 }
             }else{
-                $this->_return["msg"]="Fichier incompatible";
+                //$this->_return["msg"]="Fichier incompatible";
+                $this->_return["msg"]=$file['name'];
                 http_response_code(400);
             }
         }else{
             $this->_return["msg"]="1 ou plusieurs parametres absents";
             http_response_code(400);
         }
-        http_response_code(200);
         echo(json_encode($this->_return));
     }
 
@@ -70,7 +67,7 @@ class PictureController
                 http_response_code(200);
                 $this->_return["id_picture"]=$picture->getId_Picture();
                 $this->_return["id_user"]=$picture->getId_User();
-                $this->_return["id_object"]=$picture->getId_Object();
+                $this->_return["id_objet"]=$picture->getId_Object();
                 $this->_return["saison"]=$picture->getSaison();
                 $temp = stream_get_contents($picture->getFile());
                 file_put_contents("tempP/".$picture->getName(),$temp);

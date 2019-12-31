@@ -19,7 +19,7 @@ class PictureMapper extends ModelMapper{
         $req=$this->getBdd()->prepare('SELECT id_picture FROM '.$this->getPictureTable().' WHERE id_object= ?');
         $req->execute(array($id_object));
         while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            array_push($res,$row);
+            array_push($res,$row["id_picture"]);
         }
         return $res;
     }

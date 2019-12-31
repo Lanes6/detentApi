@@ -9,13 +9,20 @@
         android:id="@+id/imageView_storage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:srcCompat="@tools:sample/avatars" />
+        tools:srcCompat="@tools:sample/avatars"
+        android:layout_margin="10dp"/>
 
     <pl.droidsonroids.gif.GifImageView
         android:id="@+id/gif_chargement"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/chargement"/>
+
+    <Spinner
+        android:layout_margin="10dp"
+        android:id="@+id/choix_saison"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 
 </LinearLayout>

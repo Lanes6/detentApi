@@ -24,10 +24,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.media.Rating;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -130,9 +132,10 @@ public class MainActivity extends AppCompatActivity implements
             = MediaType.get("application/json; charset=utf-8");
 
 
-    private String url = "90.20.56.80";
+    private String url = "90.20.196.207";
     private String HOST_MAP = "http://"+url+":8080";
     private String HOST_API = "http://"+url;
+    private String HOST_API_PICTURES = "http://"+url+"/";
     private String URL_TEST_API = "/detentApi/index/index";
     private String URL_TEST_BDD = "/detentApi/index/testDB";
     private String URL_TEST_JWT = "/detentApi/index/testJWT";
@@ -145,21 +148,21 @@ public class MainActivity extends AppCompatActivity implements
     private String URL_TO_UPDATE_USER = "/detentApi/user/update";
     private String URL_TO_DELETE_USER = "/detentApi/user/delete";
 
-    private String URL_OBJECT_SELECTBYID = "/detentApi/object/selectById";
-    private String URL_OBJECT_CREATE = "/detentApi/object/create";
-    private String URL_OBJECT_UPDATE = "/detentApi/object/update";
-    private String URL_OBJECT_DELETE = "/detentApi/object/delete";
+    private String URL_OBJECT_SELECTBYID = "/detentApi/objet/selectById";
+    private String URL_OBJECT_CREATE = "/detentApi/objet/create";
+    private String URL_OBJECT_UPDATE = "/detentApi/objet/update";
+    private String URL_OBJECT_DELETE = "/detentApi/objet/delete";
 
     private String URL_NOTE_SELECT = "/detentApi/note/select";
     private String URL_NOTE_CREATE = "/detentApi/note/create";
 
     private String URL_REPORT_CREATE = "/detentApi/report/create";
     private String URL_REPORT_DELETE = "/detentApi/report/delete";
-    private String URL_REPORT_SELECTBYID = "/detentApi/report/selectById";
-    private String URL_REPORT_SELECTBYOBJECT = "/detentApi/report/selectByObject";
+    private String URL_REPORT_SELECTBYID = "/detentApi/report/selectByIdReport";
+    private String URL_REPORT_SELECTBYOBJECT = "/detentApi/report/selectByIdObjet";
 
     private String URL_PICTURE_SELECTBYID = "/detentApi/picture/selectById";
-    private String URL_PICTURE_SELECTBYOBJECT = "/detentApi/picture/selectByObject";
+    private String URL_PICTURE_SELECTBYOBJECT = "/detentApi/picture/selectByObjet";
     private String URL_PICTURE_CREATE = "/detentApi/picture/create";
 
     private PermissionsManager permissionsManager;
@@ -186,13 +189,18 @@ public class MainActivity extends AppCompatActivity implements
     private boolean connected_to_internet;
     private boolean connect_to_server;
     private OkHttpClient clientAPI;
+    private String messageCreateNote;
+    private File selectedFile;
+
+    private int resultat_choix_saison;
 
     private User user;
     private Object selectedObject;
     private Report selectedReport;
-    private Picture selectedPicture;
+    private int selectedPicture;
     private Note selectedNote;
     private List<Picture> listPictures;
+    private List<String> listFilePictures;
     private List<Integer> listIdPictures;
     private View view_picture_storage;
 
@@ -247,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements
         user = new User();
         selectedObject = new Object();
         selectedNote = new Note();
-        selectedPicture = new Picture();
         selectedReport = new Report();
 
         erreurUpdate = new AlertDialog.Builder(this)
@@ -740,18 +747,19 @@ public class MainActivity extends AppCompatActivity implements
             int index = getIndexPoint(features);
             if(index != -1){
                 Feature feature = features.get(index);
-
-
                 if (feature.properties() != null) {
                     for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
-                        Log.i("info point",entry.getKey()+" : "+entry.getValue());
                         if(entry.getKey().contains("id_object")){
                             selectedObject.setId_object(entry.getValue().getAsInt());
+                            break;
                         }
+                    }
+                    for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
                         if(entry.getKey().contains("type")){
                             selectedObject.setType(entry.getValue().getAsString());
                             if(selectedObject.getType().contains("suggestion") || selectedObject.getType().contains("proposition")){
                                 if(connect_to_server && connect_to_account){
+                                    Log.i("recup info id object",""+selectedObject.getId_object());
                                     if(selectNote(""+selectedObject.getId_object())){
                                         Log.i("recup info","select note recup");
                                     }
@@ -785,7 +793,6 @@ public class MainActivity extends AppCompatActivity implements
                             }catch (Exception e){
                                 selectedObject.setDescription("Aucune description");
                             }
-
                         }
                     }
                 }
@@ -810,55 +817,57 @@ public class MainActivity extends AppCompatActivity implements
                         view = getLayoutInflater().inflate(R.layout.affichage_point_proposition,null);
                         typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                         descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
+                        RatingBar note_moyenne = (RatingBar) view.findViewById(R.id.note_point);
+                        note_moyenne.setRating((float) selectedNote.getNote());
                         typePoint.setText(selectedObject.getType());
                         descriptionPoint.setText(selectedObject.getDescription());
                         affichePointProposition(view);
                     }
                     else{
-                        //si arbre
-                        if(selectedObject.getType().contains("tree")){
-                            view = getLayoutInflater().inflate(R.layout.affichage_point_arbre,null);
+                        //si report
+                        if(selectedObject.getType().contains("report")){
+                            view = getLayoutInflater().inflate(R.layout.affichage_point_signalement,null);
                             typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                             descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
-                            ImageButton bt_add_picture_storage = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_storage);
-                            ImageButton bt_add_picture_camera = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_camera);
-                            bt_add_picture_storage.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    pickFromGallery();
-                                }
-                            });
-                            bt_add_picture_camera.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    captureFromCamera();
-                                }
-                            });
+                            Button bouton_unreport = (Button) view.findViewById(R.id.button_unreport_point);
+                            TextView description_report = (TextView) view.findViewById(R.id.textView_description_report);
                             typePoint.setText(selectedObject.getType());
                             descriptionPoint.setText(selectedObject.getDescription());
-                            affichePointArbre(view);
+                            bouton_unreport.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if(deleteReport(""+selectedReport.getId_report())){
+                                        Toast.makeText(context,"Votre indication a bien été pris en compte",Toast.LENGTH_LONG).show();
+                                    }
+                                    else{
+                                        Toast.makeText(context,"Une erreur est survenue.",Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
                         }
                         else{
-                            //si report
-                            if(selectedObject.getType().contains("report")){
-                                view = getLayoutInflater().inflate(R.layout.affichage_point_signalement,null);
+                            //si arbre
+                            if(selectedObject.getType().contains("tree")){
+                                view = getLayoutInflater().inflate(R.layout.affichage_point_arbre,null);
                                 typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                                 descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
-                                Button bouton_unreport = (Button) view.findViewById(R.id.button_unreport_point);
-                                TextView description_report = (TextView) view.findViewById(R.id.textView_description_report);
-                                typePoint.setText(selectedObject.getType());
-                                descriptionPoint.setText(selectedObject.getDescription());
-                                bouton_unreport.setOnClickListener(new View.OnClickListener() {
+                                ImageButton bt_add_picture_storage = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_storage);
+                                ImageButton bt_add_picture_camera = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_camera);
+                                bt_add_picture_storage.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        if(deleteReport(""+selectedReport.getId_report())){
-                                            Toast.makeText(context,"Votre indication a bien été pris en compte",Toast.LENGTH_LONG).show();
-                                        }
-                                        else{
-                                            Toast.makeText(context,"Une erreur est survenue.",Toast.LENGTH_LONG).show();
-                                        }
+                                        pickFromGallery();
                                     }
                                 });
+                                bt_add_picture_camera.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        captureFromCamera();
+                                    }
+                                });
+                                typePoint.setText(selectedObject.getType());
+                                descriptionPoint.setText(selectedObject.getDescription());
+                                affichePointArbre(view);
                             }
                             else{
                                 //tous autre
@@ -874,9 +883,7 @@ public class MainActivity extends AppCompatActivity implements
                                         reportPoint();
                                     }
                                 });
-
                             }
-
                         }
                     }
 
@@ -1176,7 +1183,7 @@ public class MainActivity extends AppCompatActivity implements
                                 Toast.makeText(context,"votre note a été pris en compte",Toast.LENGTH_LONG ).show();
                             }
                             else{
-                                Toast.makeText(context,"une erreur est survenue",Toast.LENGTH_LONG ).show();
+                                Toast.makeText(context,messageCreateNote,Toast.LENGTH_LONG ).show();
                             }
                         }
                     });
@@ -1196,24 +1203,44 @@ public class MainActivity extends AppCompatActivity implements
     }
     private String resultat_saison;
 
-    public void affichePointArbre(final View view){
-        final ArrayList<Bitmap> listDrawableImage = new ArrayList<>();
-        final ArrayList<String> listUrlImage = new ArrayList<>();
+    public void affichePointArbre(final View view) {
+        //final ArrayList<String> listUrlImage = new ArrayList<>();
+        listPictures = new ArrayList<>();
+        listIdPictures = new ArrayList<>();
+        listFilePictures = new ArrayList<>();
+        if (selectPictureByObject("" + selectedObject.getId_object())) {
+            for(int i = 0 ; i< listIdPictures.size();i++){
+                if(selectPictureById(listIdPictures.get(i),i)){
+                    Log.i("recup images","images : "+i+", bien recup");
+                }
+                else{
+                    Log.i("recup images","images : "+i+", pas recup");
+                }
+            }
+            Log.i("recup images","nb images recup : "+listIdPictures.size());
+            Log.i("recup images","images bien recup");
+        }
+        else{
+            Toast.makeText(context,"Aucune photo n'est lié avec cet arbre",Toast.LENGTH_LONG).show();
+            listFilePictures.add("http://placehold.it/300x300");
+            Log.i("recup images","pas d'images recup");
+        }
+        /*listUrlImage.add("http://placehold.it/300x300");
         listUrlImage.add("http://placehold.it/300x300");
         listUrlImage.add("http://placehold.it/300x300");
-        listUrlImage.add("http://placehold.it/300x300");
-        listUrlImage.add("http://placehold.it/300x300");
+        listUrlImage.add("http://placehold.it/300x300");*/
 
-        final String[] saisons= new String[]{"Eté","Printemps","Hiver","Automne"};
-        resultat_saison=saisons[0];
+        final String[] saisons = new String[]{"Eté", "Printemps", "Hiver", "Automne"};
+        resultat_saison = saisons[0];
         final Spinner spinner = (Spinner) view.findViewById(R.id.choix_saison);
-        ArrayAdapter<String> dataAdapterR = new ArrayAdapter<String>(context,android.R.layout.simple_spinner_item,saisons);
+        ArrayAdapter<String> dataAdapterR = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, saisons);
         dataAdapterR.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(dataAdapterR);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 resultat_saison = saisons[position];
+                //TODO afficher les photos en fonction de la saison sélectionné
             }
 
             @Override
@@ -1224,17 +1251,20 @@ public class MainActivity extends AppCompatActivity implements
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                for(String image : listUrlImage){
+                final ArrayList<Bitmap> listDrawableImage = new ArrayList<>();
+                //TODO enregistrer les images en interne pour eviter de les retélécharger à chaque fois
+                for (String image : listFilePictures) {
+                    Log.i("recup images",image);
                     listDrawableImage.add(LoadImageFromWebOperations(image));
                 }
 
-                if(listDrawableImage.get(0) != null){
+                if (listDrawableImage.size() != 0) {
                     MainActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             GifImageButton g = (GifImageButton) view.findViewById(R.id.gif_chargement);
                             ViewPager viewPager = view.findViewById(R.id.album_arbres);
-                            ImageAdapter adapter = new ImageAdapter(context,listDrawableImage);
+                            ImageAdapter adapter = new ImageAdapter(context, listDrawableImage);
                             viewPager.setAdapter(adapter);
                             viewPager.getLayoutParams().height = g.getLayoutParams().height;
                             g.getLayoutParams().height = 0;
@@ -1251,11 +1281,30 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private int GALLERY_REQUEST_CODE = 0;
+    private String galleryFillPath;
 
     private void pickFromGallery(){
+        galleryFillPath ="";
         view_picture_storage = getLayoutInflater().inflate(R.layout.take_picture_storage,null);
         AlertDialog.Builder picture_int_storage = new AlertDialog.Builder(context).setView(view_picture_storage);
         GifImageView g = view_picture_storage.findViewById(R.id.gif_chargement);
+        final String[] saisons = new String[]{"Eté", "Printemps", "Hiver", "Automne"};
+        resultat_saison = saisons[0];
+        final Spinner spinner = (Spinner) view_picture_storage.findViewById(R.id.choix_saison);
+        ArrayAdapter<String> dataAdapterR = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, saisons);
+        dataAdapterR.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(dataAdapterR);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                resultat_saison = saisons[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                resultat_saison = saisons[0];
+            }
+        });
         g.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1274,8 +1323,18 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //TODO request ajouter photo album
-                ImageView imageView = (ImageView) view_picture_storage.findViewById(R.id.imageView_storage);
-                Toast.makeText(context,"photo bien ajouté",Toast.LENGTH_LONG).show();
+                if(galleryFillPath.equals("")){
+                    Toast.makeText(context,"vous n'avez pas selectionne de photo",Toast.LENGTH_LONG).show();
+                }
+                else{
+                    if(createPicture(selectedObject.getId_object(),resultat_saison,galleryFillPath)){
+                        Toast.makeText(context,"votre photo a bien été ajouté",Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Toast.makeText(context,"une erreur est survenue lors de la mise en ligne de votre image",Toast.LENGTH_LONG).show();
+                    }
+                }
+
             }
         });
         picture_int_storage.setNegativeButton("annuler", new DialogInterface.OnClickListener() {
@@ -1313,7 +1372,8 @@ public class MainActivity extends AppCompatActivity implements
                 storageDir      /* directory */
         );
         // Save a file: path for using again
-        cameraFilePath = "file://" + image.getAbsolutePath();
+        selectedFile = image;
+        cameraFilePath = image.getAbsolutePath();
         return image;
     }
 
@@ -1321,6 +1381,22 @@ public class MainActivity extends AppCompatActivity implements
         view_picture_storage = getLayoutInflater().inflate(R.layout.take_picture_storage,null);
         AlertDialog.Builder picture_int_storage = new AlertDialog.Builder(context).setView(view_picture_storage);
         GifImageView g = view_picture_storage.findViewById(R.id.gif_chargement);
+
+        Spinner choix_saison = (Spinner) view_picture_storage.findViewById(R.id.choix_saison);
+        ArrayAdapter<String> dataAdapterR = new ArrayAdapter<String>(context,android.R.layout.simple_spinner_item,new String[]{"Eté", "Printemps", "Hiver", "Automne"});
+        dataAdapterR.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        choix_saison.setAdapter(dataAdapterR);
+        choix_saison.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                resultat_choix_saison = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                resultat_choix_saison = 0;
+            }
+        });
         g.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1336,8 +1412,30 @@ public class MainActivity extends AppCompatActivity implements
         picture_int_storage.setPositiveButton("ajouter", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO request ajouter photo album
-                Toast.makeText(context,"photo bien ajouté",Toast.LENGTH_LONG).show();
+                String saison = "";
+                switch (resultat_choix_saison){
+                    case 0:
+                        saison = "automne";
+                        break;
+                    case 1:
+                        saison = "été";
+                        break;
+                    case 2:
+                        saison = "printemps";
+                        break;
+                    case 3:
+                        saison = "hiver";
+                        break;
+                }
+                if(createPicture(selectedObject.getId_object(),saison,cameraFilePath)){
+                    Toast.makeText(context,"photo bien ajouté",Toast.LENGTH_LONG).show();
+                    View view = getLayoutInflater().inflate(R.layout.affichage_point_arbre,null);
+                    affichePointArbre(view);
+                    //TODO actualiser l'affichage
+                }
+                else{
+                    Toast.makeText(context,"Oups, un problème est survenu lors de la mise en ligne de votre photo ...",Toast.LENGTH_LONG).show();
+                }
             }
         });
         picture_int_storage.setNegativeButton("annuler", new DialogInterface.OnClickListener() {
@@ -1365,18 +1463,32 @@ public class MainActivity extends AppCompatActivity implements
                 case 0:
                     //data.getData returns the content URI for the selected Image
                     Uri selectedImage = data.getData();
+                    File file = new File(getRealPathFromURI(selectedImage));
+                    selectedFile = file;
+                    galleryFillPath = file.getAbsolutePath();
                     if(gifImageView != null){
                         gifImageView.setVisibility(View.INVISIBLE);
                     }
                     imageView.setImageURI(selectedImage);
+                    imageView.getLayoutParams().height = 1500;
+                    gifImageView.getLayoutParams().height = 0;
                     break;
                 case 1:
                     if(gifImageView != null){
                         gifImageView.setVisibility(View.INVISIBLE);
                     }
                     imageView.setImageURI(Uri.parse(cameraFilePath));
+                    imageView.getLayoutParams().height = 1500;
+                    gifImageView.getLayoutParams().height = 0;
                     break;
             }
+    }
+
+    public String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
     }
 
     public void proposition(){
@@ -1920,6 +2032,24 @@ public class MainActivity extends AppCompatActivity implements
         }
         resultat_createObject = false;
 
+        switch (type){
+            case "arbres_propositions":
+                type="tree_suggestion";
+                break;
+            case "bancs_propositions":
+                type="banc_suggestion";
+                break;
+            case "toilettes_propositions":
+                type="toilet_suggestion";
+                break;
+            case "poubelles_propositions":
+                type="trash_suggestion";
+                break;
+            case "verres_propositions":
+                type="pav_verre_suggestion";
+                break;
+        }
+
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("type",type)
@@ -1958,7 +2088,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean resultat_updateObject;
 
-    public boolean updateObject(String type,String description,LatLng point){
+    public boolean updateObject(String type,String description){
         if(!testJWT()){
             if(!refreshToken()){
                 Toast.makeText(context,"Votre session n'a pas reussis à ce mettre à jour",Toast.LENGTH_LONG).show();
@@ -1969,8 +2099,6 @@ public class MainActivity extends AppCompatActivity implements
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("type",type)
                 .addFormDataPart("description",description)
-                .addFormDataPart("latitude",""+point.getLatitude())
-                .addFormDataPart("longitude",""+point.getLongitude())
                 .build();
 
         final Request request = new Request.Builder()
@@ -2055,7 +2183,7 @@ public class MainActivity extends AppCompatActivity implements
         selectedNote = new Note();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("id_object",id_object)
+                .addFormDataPart("id_objet",id_object)
                 .build();
 
         final Request request = new Request.Builder()
@@ -2070,16 +2198,22 @@ public class MainActivity extends AppCompatActivity implements
                 try {
                     Response response = clientAPI.newCall(request).execute();
                     if(response.isSuccessful()){
-                        resultat_selectNote =false;
+                        resultat_selectNote = true;
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
-                            selectedNote.setNote(jsonObject.getDouble("id_note"));
+                            selectedNote.setNote(jsonObject.getDouble("note"));
+                            Log.i("recup info note",""+selectedNote.getNote());
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Log.i("recup info erreur",""+e.getMessage());
                         }
+                    }
+                    else{
+                        Log.i("recup info erreur",""+response.message());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.i("recup info erreur",""+e.getMessage());
                 }
             }
         });
@@ -2103,7 +2237,7 @@ public class MainActivity extends AppCompatActivity implements
         resultat_createNote = false;
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("id_object",id_object)
+                .addFormDataPart("id_objet",id_object)
                 .addFormDataPart("note",note)
                 .build();
 
@@ -2121,7 +2255,13 @@ public class MainActivity extends AppCompatActivity implements
                     if(response.isSuccessful()){
                         resultat_createNote = true;
                     }
+                    else{
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        messageCreateNote = jsonObject.getString("msg");
+                    }
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -2147,7 +2287,7 @@ public class MainActivity extends AppCompatActivity implements
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("id_object",id_object)
+                .addFormDataPart("id_objet",id_object)
                 .addFormDataPart("description",description)
                 .build();
 
@@ -2187,6 +2327,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         resultat_deleteReport = false;
+
+        Log.i("recup info id report",id_report);
+
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("id_report",id_report)
@@ -2204,6 +2347,10 @@ public class MainActivity extends AppCompatActivity implements
                     Response response = clientAPI.newCall(request).execute();
                     if(response.isSuccessful()){
                         resultat_deleteReport=true;
+                    }
+                    else{
+                        Log.i("recup info unreport",response.message());
+                        Log.i("recup info unreport",response.body().toString());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -2249,7 +2396,7 @@ public class MainActivity extends AppCompatActivity implements
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
                             selectedReport.setId_report(jsonObject.getInt("id_report"));
-                            selectedReport.setId_object(jsonObject.getInt("id_object"));
+                            selectedReport.setId_object(jsonObject.getInt("id_objet"));
                             selectedReport.setId_user(jsonObject.getInt("id_user"));
                             selectedReport.setDescription(jsonObject.getString("description"));
                         } catch (JSONException e) {
@@ -2282,7 +2429,7 @@ public class MainActivity extends AppCompatActivity implements
         resultat_selectReportByObject = false;
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("id_object",id_object)
+                .addFormDataPart("id_objet",id_object)
                 .build();
 
         final Request request = new Request.Builder()
@@ -2300,12 +2447,19 @@ public class MainActivity extends AppCompatActivity implements
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
                             selectedReport.setId_report(jsonObject.getInt("id_report"));
-                            selectedReport.setId_object(jsonObject.getInt("id_object"));
+                            selectedReport.setId_object(jsonObject.getInt("id_objet"));
                             selectedReport.setId_user(jsonObject.getInt("id_user"));
                             selectedReport.setDescription(jsonObject.getString("description"));
+
+                            Log.i("recup info get rep",""+selectedReport.getId_report());
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Log.i("recup info get rep",e.getMessage());
                         }
+                    }
+                    else{
+                        Log.i("recup info report",response.message());
+                        Log.i("recup info report",response.body().string());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -2323,17 +2477,17 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean resultat_selectPictureById;
 
-    private boolean selectPictureById(String id_picture){
+    private boolean selectPictureById(int id_picture,final int index){
         if(!testJWT()){
             if(!refreshToken()){
                 Toast.makeText(context,"Votre session n'a pas reussis à ce mettre à jour",Toast.LENGTH_LONG).show();
             }
         }
-        selectedPicture = new Picture();
+        selectedPicture = id_picture;
         resultat_selectPictureById = false;
 
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("id_picture",id_picture)
+                .addFormDataPart("id_picture",""+id_picture)
                 .build();
 
         final Request request = new Request.Builder()
@@ -2351,17 +2505,21 @@ public class MainActivity extends AppCompatActivity implements
                         resultat_selectPictureById = true;
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
-                            selectedPicture.setId_picture(jsonObject.getInt("id_picture"));
-                            selectedPicture.setId_object(jsonObject.getInt("id_object"));
-                            selectedPicture.setId_user(jsonObject.getInt("id_user"));
-                            selectedPicture.setSaison(jsonObject.getString("saison"));
-                            selectedPicture.setFile(jsonObject.getString("file"));
+                            listPictures.add(new Picture());
+                            listPictures.get(index).setId_picture(jsonObject.getInt("id_picture"));
+                            listPictures.get(index).setId_object(jsonObject.getInt("id_objet"));
+                            listPictures.get(index).setId_user(jsonObject.getInt("id_user"));
+                            listPictures.get(index).setSaison(jsonObject.getString("saison"));
+                            listPictures.get(index).setFile(HOST_API_PICTURES+jsonObject.getString("file"));
+                            listFilePictures.add(listPictures.get(index).getFile());
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Log.i("recup image",e.getMessage());
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.i("recup image",e.getMessage());
                 }
             }
         });
@@ -2383,12 +2541,11 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(context,"Votre session n'a pas reussis à ce mettre à jour",Toast.LENGTH_LONG).show();
             }
         }
-        selectedPicture = new Picture();
         resultat_selectPictureByObject = false;
         listIdPictures = new ArrayList<>();
 
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("id_picture",id_object)
+                .addFormDataPart("id_objet",id_object)
                 .build();
 
         final Request request = new Request.Builder()
@@ -2406,15 +2563,24 @@ public class MainActivity extends AppCompatActivity implements
                         resultat_selectPictureByObject = true;
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
-                            for(int i=0;i<jsonObject.length();i++){
+                            for(int i=1;i<jsonObject.length()+1;i++){
                                 listIdPictures.add(jsonObject.getInt("id_picture_"+i));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Log.i("recup images",e.getMessage());
                         }
+                    }
+                    else{
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        Log.i("recup images",jsonObject.getString("msg"));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.i("recup images",e.getStackTrace().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i("recup images",e.getMessage());
                 }
             }
         });
@@ -2439,9 +2605,9 @@ public class MainActivity extends AppCompatActivity implements
         resultat_createPicture = false;
 
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("id_object", ""+id_object)
+                .addFormDataPart("id_objet", ""+id_object)
                 .addFormDataPart("saison", saison)
-                .addFormDataPart("file", "image.png",RequestBody.create(MediaType.parse("application/octet-stream"),new File(file)))
+                .addFormDataPart("file", selectedFile.getName(),RequestBody.create(MediaType.parse("application/octet-stream"),new File(file)))
                 .build();
 
         final Request request = new Request.Builder()
@@ -2458,8 +2624,16 @@ public class MainActivity extends AppCompatActivity implements
                     if(response.isSuccessful()){
                         resultat_createPicture = true;
                     }
+                    else{
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        Log.i("recup info image",jsonObject.getString("msg"));
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.i("recup info image",""+e);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i("recup info image","erreur 2");
                 }
             }
         });

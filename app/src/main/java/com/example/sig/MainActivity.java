@@ -1,5 +1,6 @@
 package com.example.sig;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -93,6 +94,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.mapbox.mapboxsdk.style.expressions.Expression.bool;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 
 import java.io.File;
@@ -122,8 +124,10 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize;
 public class MainActivity extends AppCompatActivity implements
         OnMapReadyCallback, PermissionsListener, MapboxMap.OnMapClickListener {
 
-    private static final LatLng BOUND_CORNER_NW = new LatLng(47.934377, 1.861456);
-    private static final LatLng BOUND_CORNER_SE = new LatLng(47.811187, 1.971275);
+    //private static final LatLng BOUND_CORNER_NW = new LatLng(47.934377, 1.861456);
+    private static final LatLng BOUND_CORNER_NW = new LatLng(47.985880, 1.746736);
+    //private static final LatLng BOUND_CORNER_SE = new LatLng(47.811187, 1.971275);
+    private static final LatLng BOUND_CORNER_SE = new LatLng(47.788809, 2.100004);
     private static final LatLngBounds RESTRICTED_BOUNDS_AREA = new LatLngBounds.Builder()
             .include(BOUND_CORNER_NW)
             .include(BOUND_CORNER_SE)
@@ -176,11 +180,6 @@ public class MainActivity extends AppCompatActivity implements
     private Context context;
     private int resultat;
     private LatLng nouveauPoint;
-    private ArrayList<Point> littleBddPointAbrespropositions;
-    private ArrayList<Point> littleBddPointBancspropositions;
-    private ArrayList<Point> littleBddPointToilettespropositions;
-    private ArrayList<Point> littleBddPointPoubellespropositions;
-    private ArrayList<Point> littleBddPointVerrespropositions;
     private ArrayList<Bitmap> icons;
     private ArrayList<String> listUrlGeoJson;
     private AlertDialog erreurUpdate;
@@ -191,13 +190,13 @@ public class MainActivity extends AppCompatActivity implements
     private OkHttpClient clientAPI;
     private String messageCreateNote;
     private File selectedFile;
+    private ArrayList<Bitmap> listDrawableImage;
 
     private int resultat_choix_saison;
 
     private User user;
     private Object selectedObject;
     private Report selectedReport;
-    private int selectedPicture;
     private Note selectedNote;
     private List<Picture> listPictures;
     private List<String> listFilePictures;
@@ -245,11 +244,6 @@ public class MainActivity extends AppCompatActivity implements
         connected_to_internet =false;
 
         connect_to_server = false;
-        littleBddPointAbrespropositions = new ArrayList<>();
-        littleBddPointBancspropositions = new ArrayList<>();
-        littleBddPointToilettespropositions= new ArrayList<>();
-        littleBddPointPoubellespropositions= new ArrayList<>();
-        littleBddPointVerrespropositions= new ArrayList<>();
         listUrlGeoJson = new ArrayList<>();
         clientAPI = new OkHttpClient();
         user = new User();
@@ -453,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.action_connexion :
                 final MenuItem m = menuPrincipal.getItem(4);
-                if(m.getIcon().getConstantState().equals(getDrawable(R.drawable.baseline_lock_white_18dp).getConstantState()) && connected_to_internet && connect_to_server){
+                if(m.getIcon().getConstantState().equals(getDrawable(R.drawable.baseline_lock_white_18dp).getConstantState()) && connected_to_internet && connect_to_server && !optionsAffichagelist[2]){
                     connexion();
                 }
                 else{
@@ -462,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements
                             profil();
                         }
                         else {
-                            Toast.makeText(context,"coucou ça marche pas",Toast.LENGTH_LONG).show();
+                            Toast.makeText(context,"Vous êtes en mode hors ligne",Toast.LENGTH_LONG).show();
                         }
 
                     }
@@ -744,6 +738,7 @@ public class MainActivity extends AppCompatActivity implements
         List<Feature> features = mapboxMap.queryRenderedFeatures(screenPoint);
         if (!features.isEmpty()) {
             //detection d'un point à afficher id_object
+            selectedObject = new Object();
             int index = getIndexPoint(features);
             if(index != -1){
                 Feature feature = features.get(index);
@@ -790,9 +785,13 @@ public class MainActivity extends AppCompatActivity implements
                         if(entry.getKey().contains("description")){
                             try{
                                 selectedObject.setDescription(entry.getValue().getAsString());
+                                selectedObject.setDescription(replaceALaLigne(selectedObject.getDescription()));
                             }catch (Exception e){
                                 selectedObject.setDescription("Aucune description");
                             }
+                        }
+                        else{
+                            selectedObject.setDescription("Aucune description");
                         }
                     }
                 }
@@ -800,8 +799,6 @@ public class MainActivity extends AppCompatActivity implements
                 TextView typePoint = null;
                 TextView descriptionPoint =  null;
                 View view = null;
-
-
 
                 if(!connect_to_server || !connected_to_internet || !connect_to_account){
                     //pas de conneixon au serveur ou pas de connexion à internet
@@ -907,6 +904,20 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         return true;
+    }
+
+    public String replaceALaLigne(String word){
+        char[] monMot = new char[word.length()];
+        boolean remplace = false;
+        for(int i = 0;i<word.length();i++){
+            monMot[i] = word.charAt(i);
+            if(!remplace && word.charAt(i) == '\\'){
+                monMot[i] = '\n';
+                monMot[i++] = '\n';
+                remplace = true;
+            }
+        }
+        return String.valueOf(monMot);
     }
 
     public int getIndexPoint(List<Feature> features){
@@ -1221,26 +1232,86 @@ public class MainActivity extends AppCompatActivity implements
             Log.i("recup images","images bien recup");
         }
         else{
-            Toast.makeText(context,"Aucune photo n'est lié avec cet arbre",Toast.LENGTH_LONG).show();
-            listFilePictures.add("http://placehold.it/300x300");
+            Toast.makeText(context,"Aucune photo n'est lié à arbre",Toast.LENGTH_LONG).show();
             Log.i("recup images","pas d'images recup");
         }
-        /*listUrlImage.add("http://placehold.it/300x300");
-        listUrlImage.add("http://placehold.it/300x300");
-        listUrlImage.add("http://placehold.it/300x300");
-        listUrlImage.add("http://placehold.it/300x300");*/
 
-        final String[] saisons = new String[]{"Eté", "Printemps", "Hiver", "Automne"};
+        final String[] saisons = new String[]{"Toutes les photos","Eté", "Printemps", "Hiver", "Automne"};
         resultat_saison = saisons[0];
         final Spinner spinner = (Spinner) view.findViewById(R.id.choix_saison);
         ArrayAdapter<String> dataAdapterR = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, saisons);
         dataAdapterR.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(dataAdapterR);
+        spinner.setEnabled(false);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
                 resultat_saison = saisons[position];
-                //TODO afficher les photos en fonction de la saison sélectionné
+
+                ViewPager viewPager = view.findViewById(R.id.album_arbres);
+                switch (resultat_saison){
+                    case "Toutes les photos" :
+                        ImageAdapter adapter = new ImageAdapter(context, listDrawableImage);
+                        viewPager.setAdapter(adapter);
+                        break;
+                    case "Eté" :
+                        ArrayList<Bitmap> listPicturesEte = new ArrayList<>();
+                        for(int i = 0;i<listPictures.size();i++){
+                            String saison = listPictures.get(i).getSaison();
+                            if(saison.contains("ete") || saison.contains("Ete") || saison.contains("eté") || saison.contains("Eté")){
+                                listPicturesEte.add(listDrawableImage.get(i));
+                            }
+                        }
+                        if(listPicturesEte.size() == 0){
+                            listPicturesEte.add(BitmapFactory.decodeResource(getResources(),R.drawable.icons_pas_de_photo));
+                        }
+                        ImageAdapter adapterEte = new ImageAdapter(context, listPicturesEte);
+                        viewPager.setAdapter(adapterEte);
+                        break;
+                    case "Printemps":
+                        ArrayList<Bitmap> listPicturesPrintemps = new ArrayList<>();
+                        for(int i = 0;i<listPictures.size();i++){
+                            String saison = listPictures.get(i).getSaison();
+                            if(saison.contains("Printemps") || saison.contains("printemps")){
+                                listPicturesPrintemps.add(listDrawableImage.get(i));
+                            }
+                        }
+                        if(listPicturesPrintemps.size() == 0){
+                            listPicturesPrintemps.add(BitmapFactory.decodeResource(getResources(),R.drawable.icons_pas_de_photo));
+                        }
+                        ImageAdapter adapterPrintemps = new ImageAdapter(context, listPicturesPrintemps);
+                        viewPager.setAdapter(adapterPrintemps);
+                        break;
+                    case "Hiver":
+                        ArrayList<Bitmap> listPicturesHiver = new ArrayList<>();
+                        for(int i = 0;i<listPictures.size();i++){
+                            String saison = listPictures.get(i).getSaison();
+                            if(saison.contains("Hiver") || saison.contains("hiver")){
+                                listPicturesHiver.add(listDrawableImage.get(i));
+                            }
+                        }
+                        if(listPicturesHiver.size() == 0){
+                            listPicturesHiver.add(BitmapFactory.decodeResource(getResources(),R.drawable.icons_pas_de_photo));
+                        }
+                        ImageAdapter adapterHiver = new ImageAdapter(context, listPicturesHiver);
+                        viewPager.setAdapter(adapterHiver);
+                        break;
+                    case "Automne":
+                        ArrayList<Bitmap> listPicturesAutomne = new ArrayList<>();
+                        for(int i = 0;i<listPictures.size();i++){
+                            String saison = listPictures.get(i).getSaison();
+                            if(saison.contains("Automne") || saison.contains("automne")){
+                                listPicturesAutomne.add(listDrawableImage.get(i));
+                            }
+                        }
+                        if(listPicturesAutomne.size() == 0){
+                            listPicturesAutomne.add(BitmapFactory.decodeResource(getResources(),R.drawable.icons_pas_de_photo));
+                        }
+                        ImageAdapter adapterAutomne = new ImageAdapter(context, listPicturesAutomne);
+                        viewPager.setAdapter(adapterAutomne);
+                        break;
+
+                }
             }
 
             @Override
@@ -1251,30 +1322,33 @@ public class MainActivity extends AppCompatActivity implements
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                final ArrayList<Bitmap> listDrawableImage = new ArrayList<>();
-                //TODO enregistrer les images en interne pour eviter de les retélécharger à chaque fois
+                listDrawableImage = new ArrayList<>();
                 for (String image : listFilePictures) {
                     Log.i("recup images",image);
                     listDrawableImage.add(LoadImageFromWebOperations(image));
+                    Log.i("recup images","ok");
                 }
 
-                if (listDrawableImage.size() != 0) {
-                    MainActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            GifImageButton g = (GifImageButton) view.findViewById(R.id.gif_chargement);
-                            ViewPager viewPager = view.findViewById(R.id.album_arbres);
-                            ImageAdapter adapter = new ImageAdapter(context, listDrawableImage);
-                            viewPager.setAdapter(adapter);
-                            viewPager.getLayoutParams().height = g.getLayoutParams().height;
-                            g.getLayoutParams().height = 0;
-                            g.requestLayout();
-                            g.setVisibility(View.INVISIBLE);
-                            viewPager.requestLayout();
-                            viewPager.setVisibility(View.VISIBLE);
-                        }
-                    });
+                if (listDrawableImage.size() == 0) {
+                    listDrawableImage.add(BitmapFactory.decodeResource(getResources(),R.drawable.icons_pas_de_photo));
                 }
+
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        GifImageButton g = (GifImageButton) view.findViewById(R.id.gif_chargement);
+                        ViewPager viewPager = view.findViewById(R.id.album_arbres);
+                        ImageAdapter adapter = new ImageAdapter(context, listDrawableImage);
+                        viewPager.setAdapter(adapter);
+                        viewPager.getLayoutParams().height = g.getLayoutParams().height;
+                        g.getLayoutParams().height = 0;
+                        g.requestLayout();
+                        g.setVisibility(View.INVISIBLE);
+                        viewPager.requestLayout();
+                        viewPager.setVisibility(View.VISIBLE);
+                        spinner.setEnabled(true);
+                    }
+                });
             }
         });
         t.start();
@@ -1322,7 +1396,6 @@ public class MainActivity extends AppCompatActivity implements
         picture_int_storage.setPositiveButton("ajouter", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //TODO request ajouter photo album
                 if(galleryFillPath.equals("")){
                     Toast.makeText(context,"vous n'avez pas selectionne de photo",Toast.LENGTH_LONG).show();
                 }
@@ -1431,7 +1504,6 @@ public class MainActivity extends AppCompatActivity implements
                     Toast.makeText(context,"photo bien ajouté",Toast.LENGTH_LONG).show();
                     View view = getLayoutInflater().inflate(R.layout.affichage_point_arbre,null);
                     affichePointArbre(view);
-                    //TODO actualiser l'affichage
                 }
                 else{
                     Toast.makeText(context,"Oups, un problème est survenu lors de la mise en ligne de votre photo ...",Toast.LENGTH_LONG).show();
@@ -2483,7 +2555,6 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(context,"Votre session n'a pas reussis à ce mettre à jour",Toast.LENGTH_LONG).show();
             }
         }
-        selectedPicture = id_picture;
         resultat_selectPictureById = false;
 
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
@@ -2512,6 +2583,7 @@ public class MainActivity extends AppCompatActivity implements
                             listPictures.get(index).setSaison(jsonObject.getString("saison"));
                             listPictures.get(index).setFile(HOST_API_PICTURES+jsonObject.getString("file"));
                             listFilePictures.add(listPictures.get(index).getFile());
+                            Log.i("recup images",listPictures.get(index).getSaison());
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Log.i("recup image",e.getMessage());

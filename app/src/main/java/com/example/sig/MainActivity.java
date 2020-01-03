@@ -93,6 +93,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParserException;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.bool;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
@@ -136,10 +137,10 @@ public class MainActivity extends AppCompatActivity implements
             = MediaType.get("application/json; charset=utf-8");
 
 
-    private String url = "90.20.196.207";
-    private String HOST_MAP = "http://"+url+":8080";
-    private String HOST_API = "http://"+url;
-    private String HOST_API_PICTURES = "http://"+url+"/";
+    private String url = "";
+    private String HOST_MAP;
+    private String HOST_API;
+    private String HOST_API_PICTURES;
     private String URL_TEST_API = "/detentApi/index/index";
     private String URL_TEST_BDD = "/detentApi/index/testDB";
     private String URL_TEST_JWT = "/detentApi/index/testJWT";
@@ -207,6 +208,12 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        url = "90.20.196.207";
+        HOST_MAP = "http://"+url+":8080";
+        HOST_API = "http://"+url;
+        HOST_API_PICTURES = "http://"+url+"/";
+
         Mapbox.getInstance(this, "pk.eyJ1IjoiYmxhY3BpZWNlIiwiYSI6ImNrMmo4aHc3bjEydmczY3BjcHBscTlmdXAifQ.IHBqHwBHXhaWvwv1fDkbjQ");
         setContentView(R.layout.activity_main);
 
@@ -230,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-
 
         listLieu = new String[]{"arbres","arbres_propositions","arbres_signalement",
                 "bancs","bancs_propositions","bancs_signalement",
@@ -752,6 +758,8 @@ public class MainActivity extends AppCompatActivity implements
                     for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
                         if(entry.getKey().contains("type")){
                             selectedObject.setType(entry.getValue().getAsString());
+                            //TODO rajouter un attribue titre aux objets pour l'affichage => pose problème d'utiliser le type
+                            titreType(entry.getValue().getAsString());
                             if(selectedObject.getType().contains("suggestion") || selectedObject.getType().contains("proposition")){
                                 if(connect_to_server && connect_to_account){
                                     Log.i("recup info id object",""+selectedObject.getId_object());
@@ -805,7 +813,7 @@ public class MainActivity extends AppCompatActivity implements
                     view = getLayoutInflater().inflate(R.layout.affichage_point_horsligne,null);
                     typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                     descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
-                    typePoint.setText(selectedObject.getType());
+                    typePoint.setText(selectedObject.getTitre());
                     descriptionPoint.setText(selectedObject.getDescription());
                 }
                 else{
@@ -816,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements
                         descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
                         RatingBar note_moyenne = (RatingBar) view.findViewById(R.id.note_point);
                         note_moyenne.setRating((float) selectedNote.getNote());
-                        typePoint.setText(selectedObject.getType());
+                        typePoint.setText(selectedObject.getTitre());
                         descriptionPoint.setText(selectedObject.getDescription());
                         affichePointProposition(view);
                     }
@@ -828,8 +836,9 @@ public class MainActivity extends AppCompatActivity implements
                             descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
                             Button bouton_unreport = (Button) view.findViewById(R.id.button_unreport_point);
                             TextView description_report = (TextView) view.findViewById(R.id.textView_description_report);
-                            typePoint.setText(selectedObject.getType());
+                            typePoint.setText(selectedObject.getTitre());
                             descriptionPoint.setText(selectedObject.getDescription());
+                            description_report.setText(selectedReport.getDescription());
                             bouton_unreport.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -848,6 +857,7 @@ public class MainActivity extends AppCompatActivity implements
                                 view = getLayoutInflater().inflate(R.layout.affichage_point_arbre,null);
                                 typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                                 descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
+                                Button bouton_report = (Button) view.findViewById(R.id.button_report_point);
                                 ImageButton bt_add_picture_storage = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_storage);
                                 ImageButton bt_add_picture_camera = (ImageButton) view.findViewById(R.id.bt_ajout_photo_album_camera);
                                 bt_add_picture_storage.setOnClickListener(new View.OnClickListener() {
@@ -862,7 +872,13 @@ public class MainActivity extends AppCompatActivity implements
                                         captureFromCamera();
                                     }
                                 });
-                                typePoint.setText(selectedObject.getType());
+                                bouton_report.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        reportPoint();
+                                    }
+                                });
+                                typePoint.setText(selectedObject.getTitre());
                                 descriptionPoint.setText(selectedObject.getDescription());
                                 affichePointArbre(view);
                             }
@@ -872,7 +888,7 @@ public class MainActivity extends AppCompatActivity implements
                                 typePoint = (TextView) view.findViewById(R.id.textView_type_point);
                                 descriptionPoint = (TextView) view.findViewById(R.id.textView_description_point);
                                 Button bouton_report = (Button) view.findViewById(R.id.button_report_point);
-                                typePoint.setText(selectedObject.getType());
+                                typePoint.setText(selectedObject.getTitre());
                                 descriptionPoint.setText(selectedObject.getDescription());
                                 bouton_report.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -920,19 +936,71 @@ public class MainActivity extends AppCompatActivity implements
         return String.valueOf(monMot);
     }
 
+    public void titreType(String type){
+        switch (type){
+            case "tree":
+                selectedObject.setTitre("Arbre");
+                break;
+            case "tree_suggestion" :
+                selectedObject.setTitre("Suggestion d'arbre");
+                break;
+            case "tree_report":
+                selectedObject.setTitre("Report d'arbre");
+                break;
+            case "banc":
+                selectedObject.setTitre("Banc");
+                break;
+            case "banc_suggestion" :
+                selectedObject.setTitre("Suggestion de banc");
+                break;
+            case "banc_report" :
+                selectedObject.setTitre("Report pour un banc");
+                break;
+            case "toilet" :
+                selectedObject.setTitre("Toilette");
+                break;
+            case "toilet_suggestion":
+                selectedObject.setTitre("Suggestion de toilette");
+                break;
+            case "toilet_report":
+                selectedObject.setTitre("Report pour ces toilette");
+                break;
+            case "trash":
+                selectedObject.setTitre("Poubelle");
+                break;
+            case "trash_suggestion":
+                selectedObject.setTitre("Suggestion pour une poubelle");
+                break;
+            case "trash_report" :
+                selectedObject.setTitre("Report pour cette poubelle");
+                break;
+            case "pav_verre":
+                selectedObject.setTitre("Trie pour le verre");
+                break;
+            case "pav_verre_suggestion":
+                selectedObject.setTitre("Suggestion de poubelle pour le verre");
+                break;
+            case "pav_verre_report":
+                selectedObject.setTitre("Report de poubelle pour le verre");
+                break;
+        }
+    }
+
     public int getIndexPoint(List<Feature> features){
         int index = 0;
         for(Feature feature : features){
             if (feature.properties() != null) {
                 for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
+                    Log.i("recup point",entry.getKey());
+                    Log.i("recup point","--"+entry.getValue().toString());
                     if(entry.getKey().contains("id_object") ||
-                            entry.getValue().toString().equals("\"tree\"") ||
-                            entry.getValue().toString().equals("\"trash\"") ||
-                            entry.getValue().toString().equals("\"toilet\"") ||
+                            entry.getValue().toString().contains("\"tree\"") ||
+                            entry.getValue().toString().contains("\"trash\"") ||
+                            entry.getValue().toString().contains("\"toilet\"") ||
                             entry.getKey().contains("banc")||
                             entry.getValue().toString().contains("banc") ||
                             entry.getValue().toString().contains("Banc") ||
-                            entry.getValue().toString().equals("\"pav_verre\"")
+                            entry.getValue().toString().contains("\"verre\"")
                     ){
                         return index;
                     }
@@ -1137,6 +1205,9 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         url = newUrl.getText().toString();
+                        HOST_MAP = "http://"+url+":8080";
+                        HOST_API = "http://"+url;
+                        HOST_API_PICTURES = "http://"+url+"/";
                         Toast.makeText(context,"URL change"+url,Toast.LENGTH_LONG).show();
                     }
                 });
@@ -1733,6 +1804,7 @@ public class MainActivity extends AppCompatActivity implements
         clientAPI.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                Log.i("recup connexion",""+e.getMessage());
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -2523,7 +2595,8 @@ public class MainActivity extends AppCompatActivity implements
                             selectedReport.setId_user(jsonObject.getInt("id_user"));
                             selectedReport.setDescription(jsonObject.getString("description"));
 
-                            Log.i("recup info get rep",""+selectedReport.getId_report());
+                            //Log.i("recup info get rep",""+selectedReport.getId_report());
+                            //Log.i("recup info get rep",""+selectedReport.getDescription());
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Log.i("recup info get rep",e.getMessage());

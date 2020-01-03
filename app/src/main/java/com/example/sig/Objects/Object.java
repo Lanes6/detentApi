@@ -5,6 +5,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 public class Object {
     private int id_object;
     private int id_user;
+    private String titre;
     private String type;
     private String description;
     private LatLng goem;
@@ -50,5 +51,13 @@ public class Object {
 
     public void setGoem(LatLng goem) {
         this.goem = goem;
+    }
+
+    public String getTitre() {
+        return titre;
+    }
+
+    public void setTitre(String titre) {
+        this.titre = titre;
     }
 }

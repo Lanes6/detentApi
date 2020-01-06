@@ -1,60 +1,72 @@
 <?php
-class UserMapper extends Model{
-
-    public function __construct()
-    {
-        $this->setTable('data.user');
-    }
-
-    /*public function fetchAll(){
-        $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable());
-        $req->execute();
-        $data= array();
-        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            array_push ($data,(new User($row)));
-        }
-        return $data;
-    }*/
+class UserMapper extends ModelMapper{
 
     public function findByIdUser($id_user){
-        $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE id_user='.$id_user);
-        $req->execute();
-        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            return new User($row);
+        try {
+            $req = $this->getBdd()->prepare('SELECT * FROM '.$this->getUserTable().' WHERE id_user= ?');
+            $req->execute(array($id_user));
+            while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+                return new User($row);
+            }
+            return null;
+        }catch (Exception $e){
+            return null;
         }
-        return null;
     }
 
-   /* public function findByLogin($login){
-        $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getTable().' WHERE login=\''.$login.'\'');
-        $req->execute();
-        while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-            return new User($row);
+    public function findByLogin($login){
+        try{
+            $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getUserTable().' WHERE login= ?');
+            $req->execute(array($login));
+            while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+                return new User($row);
+            }
+            return null;
+        }catch (Exception $e){
+            return null;
         }
-        return null;
     }
 
-    public function resetSecret($user){
-        $configApp = Retrinko\Ini\IniFile::load(PATH_CONFIG."application.ini");
-        $newSecret=$user->getSecret();
-        while ($newSecret==$user->getSecret()){
-            $newSecret=$this->_generateRandomSecret();
+    public function findByMail($mail){
+        try{
+            $req=$this->getBdd()->prepare('SELECT * FROM '.$this->getUserTable().' WHERE mail= ?');
+            $req->execute(array($mail));
+            while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+                return new User($row);
+            }
+            return null;
+        }catch (Exception $e){
+            return null;
         }
-        $newSecretHash= password_hash($newSecret, $configApp->get('password', 'algoInInt'));
-        $req=$this->getBdd()->prepare('UPDATE '.$this->getTable().' SET secret = \''.$newSecretHash.'\' WHERE id_user='.$user->getId_user());
-        $req->execute();
-        return $newSecret;
     }
 
-
-    private function _generateRandomSecret($longueur = 10)
-    {
-        $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $longueurMax = strlen($caracteres);
-        $chaineAleatoire = '';
-        for ($i = 0; $i < $longueur; $i ++) {
-            $chaineAleatoire .= $caracteres[rand(0, $longueurMax - 1)];
+    public function createUser(User $user){
+        try{
+            $req=$this->getBdd()->prepare('INSERT INTO '.$this->getUserTable().' (login, hash_mdp, secret_token, mail) VALUES (?,?,?,?)');
+            $req->execute(array($user->getLogin(),$user->getHash_mdp(),$user->getSecret_token(),$user->getMail()));
+            return $this->getBdd() -> lastInsertId();
+        }catch (Exception $e){
+            return null;
         }
-        return $chaineAleatoire;
-    }*/
+    }
+
+    public function updateUser(User $user){
+        try{
+            $req=$this->getBdd()->prepare(' UPDATE '.$this->getUserTable().' SET login= ?, hash_mdp= ?, secret_token= ?, mail= ? WHERE id_user= ?');
+            $req->execute(array($user->getLogin(),$user->getHash_mdp(),$user->getSecret_token(),$user->getMail(),$user->getId_User()));
+            return true;
+        }catch (Exception $e){
+            return false;
+        }
+    }
+
+    public function deleteUser($id_user){
+        try{
+            $req=$this->getBdd()->prepare('DELETE FROM '.$this->getUserTable().' WHERE id_user= ?');
+            $req->execute(array($id_user));
+            return true;
+        }catch (Exception $e){
+            return false;
+        }
+    }
 }

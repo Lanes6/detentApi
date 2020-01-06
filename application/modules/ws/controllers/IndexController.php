@@ -39,4 +39,18 @@ class IndexController{
         echo(json_encode($this->_return));
     }
 
+    public function testJWTAction(){
+        $this->_return["msg"]="TestJwt good";
+        http_response_code(200);
+        echo(json_encode($this->_return));
+    }
+
+    public function giveMeMyIdAction(){
+        $jwtToken = new JwtToken();
+        $payload = $jwtToken->giveMePayload();
+        $this->_return["msg"]="My ID:".$payload->id_user;
+        http_response_code(200);
+        echo(json_encode($this->_return));
+    }
+
 }

@@ -73,7 +73,7 @@ class ObjetController
         echo(json_encode($this->_return));
     }
 
-   /* public function selectByIdAction(){
+   public function selectByIdAction(){
         if(isset($_POST["id_objet"])){
             $id_objet=$_POST["id_objet"];
             $objet=$this->_objetMapper->findByIdObjet($id_objet);
@@ -85,26 +85,6 @@ class ObjetController
             }
         }else{
             $this->_return["msg"]="Parametre id_objet absent";
-            http_response_code(400);
-        }
-        echo(json_encode($this->_return));
-    }*/
-
-    public function selectByIdReportAction(){
-        if(isset($_POST["id_report"])){
-            $id_object=$_POST["id_object"];
-            $jwtToken = new JwtToken();
-            $id_user=$jwtToken->giveMePayload()->id_user;
-            $object=$this->_reportMapper->findReObject($id_object);
-            if($object != NULL){
-                $report=$this->_reportMapper->findReportByUserObject($id_user,$id_object);
-                $this->_select($report);
-            }else{
-                $this->_return["msg"]="Aucun object correspondant";
-                http_response_code(404);
-            }
-        }else{
-            $this->_return["msg"]="1 ou plusieurs parametres absents";
             http_response_code(400);
         }
         echo(json_encode($this->_return));

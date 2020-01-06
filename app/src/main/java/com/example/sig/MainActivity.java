@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        url = "90.20.196.207";
+        url = "92.160.98.154";
         HOST_MAP = "http://"+url+":8080";
         HOST_API = "http://"+url;
         HOST_API_PICTURES = "http://"+url+"/";
@@ -470,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements
                         if(!connect_to_server){
                             AlertDialog.Builder message_excuse = new AlertDialog.Builder(this);
                             message_excuse.setTitle("Oups !");
-                            message_excuse.setMessage("Le serveur qui s'occupe des services du mode connecté est actuellement indisponnible.");
+                            message_excuse.setMessage("Le serveur qui s'occupe des services du mode connecté est actuellement indisponible.");
                             message_excuse.create().show();
                         }
                         else{
@@ -736,7 +736,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public boolean onMapClick(@NonNull LatLng point) {
-        Log.i("test","click");
+        //Log.i("test","click");
         return handleClickIcon(mapboxMap.getProjection().toScreenLocation(point));
     }
 
@@ -762,13 +762,13 @@ public class MainActivity extends AppCompatActivity implements
                             titreType(entry.getValue().getAsString());
                             if(selectedObject.getType().contains("suggestion") || selectedObject.getType().contains("proposition")){
                                 if(connect_to_server && connect_to_account){
-                                    Log.i("recup info id object",""+selectedObject.getId_object());
+                                    //Log.i("recup info id object",""+selectedObject.getId_object());
                                     if(selectNote(""+selectedObject.getId_object())){
-                                        Log.i("recup info","select note recup");
+                                        //Log.i("recup info","select note recup");
                                     }
                                     else{
                                         selectedNote.setNote(0.0);
-                                        Log.i("recup info","select note pas recup");
+                                        //Log.i("recup info","select note pas recup");
                                     }
                                 }
                                 else{
@@ -778,11 +778,11 @@ public class MainActivity extends AppCompatActivity implements
                             if(selectedObject.getType().contains("report")){
                                 if(connect_to_server && connect_to_account){
                                     if(selectReportByObject(""+selectedObject.getId_object())){
-                                        Log.i("recup info","select report recup");
+                                        //Log.i("recup info","select report recup");
                                     }
                                     else{
                                         selectedReport.setDescription("Aucune description");
-                                        Log.i("recup info","select report pas recup");
+                                        //Log.i("recup info","select report pas recup");
                                     }
                                 }
                                 else{
@@ -975,7 +975,7 @@ public class MainActivity extends AppCompatActivity implements
                 selectedObject.setTitre("Report pour cette poubelle");
                 break;
             case "pav_verre":
-                selectedObject.setTitre("Trie pour le verre");
+                selectedObject.setTitre("Tri pour le verre");
                 break;
             case "pav_verre_suggestion":
                 selectedObject.setTitre("Suggestion de poubelle pour le verre");
@@ -991,8 +991,8 @@ public class MainActivity extends AppCompatActivity implements
         for(Feature feature : features){
             if (feature.properties() != null) {
                 for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
-                    Log.i("recup point",entry.getKey());
-                    Log.i("recup point","--"+entry.getValue().toString());
+                    //Log.i("recup point",entry.getKey());
+                    //Log.i("recup point","--"+entry.getValue().toString());
                     if(entry.getKey().contains("id_object") ||
                             entry.getValue().toString().contains("\"tree\"") ||
                             entry.getValue().toString().contains("\"trash\"") ||
@@ -1208,6 +1208,27 @@ public class MainActivity extends AppCompatActivity implements
                         HOST_MAP = "http://"+url+":8080";
                         HOST_API = "http://"+url;
                         HOST_API_PICTURES = "http://"+url+"/";
+                        listUrlGeoJson = new ArrayList<>();
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atree_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atree_suggestion_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atree_reported_view&outputFormat=application%2Fjson");
+
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Abanc_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Abanc_suggestion_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Abanc_reported_view&outputFormat=application%2Fjson");
+
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_suggestion_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atoilet_reported_view&outputFormat=application%2Fjson");
+
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atrash_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atrash_suggestion_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Atrash_reported_view&outputFormat=application%2Fjson");
+
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Apav_verre_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Apav_verre_suggestion_view&outputFormat=application%2Fjson");
+                        listUrlGeoJson.add(HOST_MAP+"/geoserver/detentTest/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=detentTest%3Apav_verre_reported_view&outputFormat=application%2Fjson");
+
                         Toast.makeText(context,"URL change"+url,Toast.LENGTH_LONG).show();
                     }
                 });
@@ -1228,10 +1249,10 @@ public class MainActivity extends AppCompatActivity implements
                         d = BitmapFactory.decodeStream(stream);
                     }
                     else{
-                        Log.i("loadImageFromUrl","ko : "+response.message());
+                        //Log.i("loadImageFromUrl","ko : "+response.message());
                     }
                 } catch (IOException e) {
-                    Log.i("loadImageFromUrl","ko : "+e);
+                    //Log.i("loadImageFromUrl","ko : "+e);
                 }
             }
         });
@@ -1293,18 +1314,18 @@ public class MainActivity extends AppCompatActivity implements
         if (selectPictureByObject("" + selectedObject.getId_object())) {
             for(int i = 0 ; i< listIdPictures.size();i++){
                 if(selectPictureById(listIdPictures.get(i),i)){
-                    Log.i("recup images","images : "+i+", bien recup");
+                    //Log.i("recup images","images : "+i+", bien recup");
                 }
                 else{
-                    Log.i("recup images","images : "+i+", pas recup");
+                    //Log.i("recup images","images : "+i+", pas recup");
                 }
             }
-            Log.i("recup images","nb images recup : "+listIdPictures.size());
-            Log.i("recup images","images bien recup");
+            //Log.i("recup images","nb images recup : "+listIdPictures.size());
+            //Log.i("recup images","images bien recup");
         }
         else{
             Toast.makeText(context,"Aucune photo n'est lié à arbre",Toast.LENGTH_LONG).show();
-            Log.i("recup images","pas d'images recup");
+            //Log.i("recup images","pas d'images recup");
         }
 
         final String[] saisons = new String[]{"Toutes les photos","Eté", "Printemps", "Hiver", "Automne"};
@@ -1395,9 +1416,9 @@ public class MainActivity extends AppCompatActivity implements
             public void run() {
                 listDrawableImage = new ArrayList<>();
                 for (String image : listFilePictures) {
-                    Log.i("recup images",image);
+                    //Log.i("recup images",image);
                     listDrawableImage.add(LoadImageFromWebOperations(image));
-                    Log.i("recup images","ok");
+                    //Log.i("recup images","ok");
                 }
 
                 if (listDrawableImage.size() == 0) {
@@ -1804,7 +1825,7 @@ public class MainActivity extends AppCompatActivity implements
         clientAPI.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Log.i("recup connexion",""+e.getMessage());
+                //Log.i("recup connexion",""+e.getMessage());
                 MainActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -2053,7 +2074,7 @@ public class MainActivity extends AppCompatActivity implements
                         user.setLogin(jsonObject.getString("login"));
                         user.setMail(jsonObject.getString("mail"));
 
-                        Log.i("testGetById",user.getId_user()+","+user.getLogin()+","+user.getMail());
+                        //Log.i("testGetById",user.getId_user()+","+user.getLogin()+","+user.getMail());
                     }
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
@@ -2346,18 +2367,18 @@ public class MainActivity extends AppCompatActivity implements
                         try {
                             JSONObject jsonObject = new JSONObject(response.body().string());
                             selectedNote.setNote(jsonObject.getDouble("note"));
-                            Log.i("recup info note",""+selectedNote.getNote());
+                            //Log.i("recup info note",""+selectedNote.getNote());
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Log.i("recup info erreur",""+e.getMessage());
+                            //Log.i("recup info erreur",""+e.getMessage());
                         }
                     }
                     else{
-                        Log.i("recup info erreur",""+response.message());
+                        //Log.i("recup info erreur",""+response.message());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.i("recup info erreur",""+e.getMessage());
+                    //Log.i("recup info erreur",""+e.getMessage());
                 }
             }
         });
@@ -2472,7 +2493,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         resultat_deleteReport = false;
 
-        Log.i("recup info id report",id_report);
+        //Log.i("recup info id report",id_report);
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -2493,8 +2514,8 @@ public class MainActivity extends AppCompatActivity implements
                         resultat_deleteReport=true;
                     }
                     else{
-                        Log.i("recup info unreport",response.message());
-                        Log.i("recup info unreport",response.body().toString());
+                        //Log.i("recup info unreport",response.message());
+                        //Log.i("recup info unreport",response.body().toString());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -2599,12 +2620,12 @@ public class MainActivity extends AppCompatActivity implements
                             //Log.i("recup info get rep",""+selectedReport.getDescription());
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Log.i("recup info get rep",e.getMessage());
+                            //Log.i("recup info get rep",e.getMessage());
                         }
                     }
                     else{
-                        Log.i("recup info report",response.message());
-                        Log.i("recup info report",response.body().string());
+                        //Log.i("recup info report",response.message());
+                        //Log.i("recup info report",response.body().string());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -2656,15 +2677,15 @@ public class MainActivity extends AppCompatActivity implements
                             listPictures.get(index).setSaison(jsonObject.getString("saison"));
                             listPictures.get(index).setFile(HOST_API_PICTURES+jsonObject.getString("file"));
                             listFilePictures.add(listPictures.get(index).getFile());
-                            Log.i("recup images",listPictures.get(index).getSaison());
+                            //Log.i("recup images",listPictures.get(index).getSaison());
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Log.i("recup image",e.getMessage());
+                            //Log.i("recup image",e.getMessage());
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.i("recup image",e.getMessage());
+                    //Log.i("recup image",e.getMessage());
                 }
             }
         });
@@ -2713,19 +2734,19 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
-                            Log.i("recup images",e.getMessage());
+                            //Log.i("recup images",e.getMessage());
                         }
                     }
                     else{
                         JSONObject jsonObject = new JSONObject(response.body().string());
-                        Log.i("recup images",jsonObject.getString("msg"));
+                        //Log.i("recup images",jsonObject.getString("msg"));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.i("recup images",e.getStackTrace().toString());
+                    //Log.i("recup images",e.getStackTrace().toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.i("recup images",e.getMessage());
+                    //Log.i("recup images",e.getMessage());
                 }
             }
         });
@@ -2771,14 +2792,14 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     else{
                         JSONObject jsonObject = new JSONObject(response.body().string());
-                        Log.i("recup info image",jsonObject.getString("msg"));
+                        //Log.i("recup info image",jsonObject.getString("msg"));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.i("recup info image",""+e);
+                    //Log.i("recup info image",""+e);
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.i("recup info image","erreur 2");
+                    //Log.i("recup info image","erreur 2");
                 }
             }
         });
